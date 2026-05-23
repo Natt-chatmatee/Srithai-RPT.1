@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>หลังบ้าน — Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; min-height: 100vh; color: #2d2d2d; }
+
+    nav {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+      height: 60px; box-shadow: 0 2px 12px rgba(0,0,0,.15);
+    }
+    nav .brand { color: #fff; font-size: 18px; font-weight: 700; }
+    nav .nav-link {
+      color: #fff; text-decoration: none; font-size: 13px; font-weight: 600;
+      border: 1.5px solid rgba(255,255,255,.6); border-radius: 8px;
+      padding: 6px 16px; transition: background .2s;
+    }
+    nav .nav-link:hover { background: rgba(255,255,255,.15); }
+
+    .tabs { background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; padding: 0 28px; gap: 4px; }
+    .tab-btn {
+      padding: 14px 20px; font-size: 14px; font-weight: 600;
+      border: none; background: none; cursor: pointer; color: #888;
+      border-bottom: 3px solid transparent; transition: color .2s, border-color .2s;
+    }
+    .tab-btn.active { color: #667eea; border-bottom-color: #667eea; }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .container { max-width: 1100px; margin: 24px auto; padding: 0 20px; }
+
+    /* ── Stat cards ── */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 12px; margin-bottom: 18px; }
+    .stat-card {
+      background: #fff; border-radius: 12px; padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.07); display: flex; flex-direction: column; gap: 4px;
+    }
+    .stat-icon  { font-size: 24px; }
+    .stat-label { font-size: 10px; color: #999; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+    .stat-value { font-size: 26px; font-weight: 800; color: #667eea; line-height: 1; }
+    .stat-sub   { font-size: 11px; color: #aaa; }
+
+    /* ── Charts grid ── */
+    .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    @media(max-width:760px) { .chart-grid,.chart-grid-3 { grid-template-columns: 1fr; } }
+    .chart-card { background: #fff; border-radius: 12px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+    .chart-title { font-size: 13px; font-weight: 700; color: #444; margin-bottom: 12px; }
+    .chart-wrap  { position: relative; height: 190px; }
+
+    /* ── Bar rows ── */
+    .bar-rows { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .bar-row  { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .bar-lbl  { width: 80px; color: #666; font-weight: 600; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track{ flex: 1; background: #f0f2f5; border-radius: 99px; height: 14px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg,#667eea,#764ba2); transition: width .5s; }
+    .bar-cnt  { width: 20px; text-align: right; color: #667eea; font-weight: 700; font-size: 12px; }
+    .bar-fill.A  { background: linear-gradient(90deg,#fc8181,#feb2b2); }
+    .bar-fill.B  { background: linear-gradient(90deg,#4299e1,#90cdf4); }
+    .bar-fill.AB { background: linear-gradient(90deg,#9f7aea,#d6bcfa); }
+    .bar-fill.O  { background: linear-gradient(90deg,#48bb78,#9ae6b4); }
+
+    /* ── Insights ── */
+    .insight-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 12px; margin-bottom: 18px; }
+    .insight-card {
+      border-radius: 12px; padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    }
+    .insight-card.risk  { background: #fff5f5; border-left: 4px solid #fc8181; }
+    .insight-card.good  { background: #f0fff4; border-left: 4px solid #68d391; }
+    .insight-card.info  { background: #ebf8ff; border-left: 4px solid #63b3ed; }
+    .insight-card.warn  { background: #fffaf0; border-left: 4px solid #f6ad55; }
+    .insight-title { font-size: 12px; font-weight: 700; color: #666; margin-bottom: 6px; }
+    .insight-val   { font-size: 22px; font-weight: 800; color: #2d2d2d; }
+    .insight-sub   { font-size: 11px; color: #888; margin-top: 2px; }
+
+    /* ── Backup section ── */
+    .backup-box {
+      background: #fff; border-radius: 12px; padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.07); margin-bottom: 24px;
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .backup-box .title { font-weight: 700; font-size: 14px; flex: 1; min-width: 160px; }
+    .backup-box .sub   { font-size: 12px; color: #888; }
+
+    /* ── Table ── */
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .search-box {
+      flex: 1; min-width: 160px; padding: 9px 13px;
+      border: 2px solid #e2e8f0; border-radius: 10px;
+      font-size: 13px; outline: none; transition: border-color .2s;
+    }
+    .search-box:focus { border-color: #667eea; }
+    .filter-select {
+      padding: 9px 10px; border: 2px solid #e2e8f0; border-radius: 10px;
+      font-size: 12px; outline: none; background: #fff; color: #555; cursor: pointer;
+      transition: border-color .2s;
+    }
+    .filter-select:focus { border-color: #667eea; }
+    .btn { padding: 9px 14px; border: none; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; transition: opacity .2s; white-space: nowrap; }
+    .btn:hover { opacity: .88; }
+    .btn-export  { background: #48bb78; color: #fff; }
+    .btn-backup  { background: #667eea; color: #fff; }
+    .btn-restore { background: #9f7aea; color: #fff; }
+    .btn-clear   { background: #fc8181; color: #fff; }
+
+    .table-wrap { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.07); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    thead { background: linear-gradient(135deg,#667eea,#764ba2); }
+    thead th { color: #fff; padding: 11px 11px; text-align: left; font-weight: 700; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid #f0f2f5; transition: background .15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f7f8ff; }
+    tbody td { padding: 9px 11px; }
+
+    .badge { display: inline-block; background: #ebf4ff; color: #667eea; border-radius: 6px; padding: 2px 7px; font-size: 11px; font-weight: 700; }
+    .g-m { background: #ebf8ff; color: #3182ce; }
+    .g-f { background: #fff0f6; color: #d53f8c; }
+    .g-u { background: #f0fff4; color: #38a169; }
+    .bl-A { background: #fff5f5; color: #c53030; }
+    .bl-B { background: #ebf8ff; color: #2b6cb0; }
+    .bl-AB{ background: #faf5ff; color: #6b46c1; }
+    .bl-O { background: #f0fff4; color: #276749; }
+    .goal-l { background: #fff5f5; color: #e53e3e; }
+    .goal-m { background: #fffaf0; color: #c05621; }
+    .goal-g { background: #f0fff4; color: #276749; }
+    .bmi-ok   { color: #38a169; font-weight: 700; }
+    .bmi-low  { color: #3182ce; font-weight: 700; }
+    .bmi-high { color: #e53e3e; font-weight: 700; }
+
+    .delete-btn { background: none; border: none; cursor: pointer; color: #fc8181; font-size: 14px; padding: 3px 5px; border-radius: 6px; }
+    .delete-btn:hover { background: #fff5f5; }
+    .empty { text-align: center; padding: 50px 24px; color: #aaa; }
+    .empty-icon { font-size: 38px; margin-bottom: 8px; }
+
+    /* Pagination */
+    .pagination { display: flex; align-items: center; gap: 6px; padding: 14px 16px; justify-content: flex-end; border-top: 1px solid #f0f2f5; flex-wrap: wrap; }
+    .page-info { font-size: 12px; color: #888; flex: 1; }
+    .page-btn {
+      padding: 5px 10px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+      font-size: 12px; font-weight: 600; cursor: pointer; background: #fff; color: #555;
+      transition: all .15s;
+    }
+    .page-btn:hover { border-color: #667eea; color: #667eea; }
+    .page-btn.active { background: #667eea; color: #fff; border-color: #667eea; }
+    .page-btn:disabled { opacity: .4; cursor: default; }
+
+    /* Dialog */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); align-items: center; justify-content: center; z-index: 100; }
+    .overlay.show { display: flex; }
+    .dialog { background: #fff; border-radius: 14px; padding: 28px 24px; max-width: 340px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+    .dialog h3 { font-size: 16px; margin-bottom: 8px; }
+    .dialog p  { color: #666; font-size: 12px; margin-bottom: 20px; }
+    .dialog-btns { display: flex; gap: 10px; justify-content: center; }
+    .dialog-btns button { padding: 9px 22px; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-cancel  { background: #e2e8f0; color: #444; }
+    .btn-confirm { background: #fc8181; color: #fff; }
+    #restoreInput { display: none; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">⚙️ ระบบหลังบ้าน</span>
+  <a class="nav-link" href="/index.html">← กลับหน้าฟอร์ม</a>
+</nav>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+  <button class="tab-btn"        onclick="switchTab('table')">📋 รายชื่อ</button>
+  <button class="tab-btn"        onclick="switchTab('backup')">💾 สำรองข้อมูล</button>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="panel active" id="panel-dashboard">
+  <div class="container">
+
+    <!-- Summary stats -->
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-label">ทั้งหมด</div><div class="stat-value" id="d-total">0</div></div>
+      <div class="stat-card"><div class="stat-icon">👨</div><div class="stat-label">ชาย</div><div class="stat-value" id="d-male">0</div><div class="stat-sub" id="d-male-p">—</div></div>
+      <div class="stat-card"><div class="stat-icon">👩</div><div class="stat-label">หญิง</div><div class="stat-value" id="d-female">0</div><div class="stat-sub" id="d-female-p">—</div></div>
+      <div class="stat-card"><div class="stat-icon">🎂</div><div class="stat-label">อายุเฉลี่ย</div><div class="stat-value" id="d-age">—</div><div class="stat-sub">ปี</div></div>
+      <div class="stat-card"><div class="stat-icon">⚖️</div><div class="stat-label">BMI เฉลี่ย</div><div class="stat-value" id="d-bmi">—</div><div class="stat-sub" id="d-bmi-l">—</div></div>
+      <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-label">TDEE เฉลี่ย</div><div class="stat-value" id="d-tdee">—</div><div class="stat-sub">kcal/วัน</div></div>
+      <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">อัปเดตล่าสุด</div><div class="stat-value" style="font-size:12px;padding-top:6px;" id="d-last">—</div></div>
+    </div>
+
+    <!-- Insights -->
+    <div class="insight-grid" id="insightGrid"></div>
+
+    <!-- Row: Gender + Age + Blood -->
+    <div class="chart-grid-3">
+      <div class="chart-card">
+        <div class="chart-title">เพศ</div>
+        <div class="chart-wrap"><canvas id="genderChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">กลุ่มเลือด</div>
+        <div class="bar-rows" id="bloodBars" style="margin-top:8px;"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">กลุ่มอายุ</div>
+        <div class="bar-rows" id="ageBars" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Row: Goal + Activity + BMI -->
+    <div class="chart-grid-3">
+      <div class="chart-card">
+        <div class="chart-title">เป้าหมายสุขภาพ</div>
+        <div class="bar-rows" id="goalBars" style="margin-top:8px;"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">ระดับกิจกรรม</div>
+        <div class="chart-wrap"><canvas id="activityChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">การกระจาย BMI</div>
+        <div class="bar-rows" id="bmiBars" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Monthly -->
+    <div class="chart-card" style="margin-bottom:28px;">
+      <div class="chart-title">จำนวนผู้ลงทะเบียนรายเดือน</div>
+      <div class="chart-wrap" style="height:180px;"><canvas id="monthChart"></canvas></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TABLE ===== -->
+<div class="panel" id="panel-table">
+  <div class="container">
+    <div class="toolbar">
+      <input class="search-box" id="searchBox" type="text" placeholder="ค้นหาชื่อ อีเมล เบอร์..." oninput="renderTable()" />
+      <select class="filter-select" id="f-gender"  onchange="renderTable()"><option value="">ทุกเพศ</option><option>ชาย</option><option>หญิง</option><option>ไม่ระบุ</option></select>
+      <select class="filter-select" id="f-blood"   onchange="renderTable()"><option value="">ทุกกลุ่มเลือด</option><option>A</option><option>B</option><option>AB</option><option>O</option></select>
+      <select class="filter-select" id="f-goal"    onchange="renderTable()"><option value="">ทุกเป้าหมาย</option><option value="lose">ลดน้ำหนัก</option><option value="maintain">รักษา</option><option value="gain">เพิ่มกล้าม</option></select>
+      <select class="filter-select" id="f-bmi"     onchange="renderTable()"><option value="">ทุก BMI</option><option value="low">น้ำหนักน้อย</option><option value="ok">สมส่วน</option><option value="over">น้ำหนักเกิน</option></select>
+      <button class="btn btn-export" onclick="exportCSV()">⬇️ CSV</button>
+      <button class="btn btn-clear"  onclick="confirmClear()">🗑️ ล้างข้อมูล</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>ชื่อ-นามสกุล</th><th>เพศ</th><th>กลุ่มเลือด</th>
+            <th>อายุ</th><th>วันเกิด</th><th>ส่วนสูง</th><th>น้ำหนัก</th>
+            <th>BMI</th><th>TDEE</th><th>เป้าหมาย</th><th>อาหาร</th>
+            <th>อีเมล</th><th>เบอร์โทร</th><th>วันที่</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="empty" id="emptyState" style="display:none;"><div class="empty-icon">📭</div><p>ไม่พบข้อมูล</p></div>
+      <div class="pagination" id="paginationBar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BACKUP ===== -->
+<div class="panel" id="panel-backup">
+  <div class="container">
+    <div class="backup-box">
+      <div>
+        <div class="title">📤 ส่งออกข้อมูลสำรอง (JSON)</div>
+        <div class="sub">บันทึกข้อมูลทั้งหมดเป็นไฟล์ .json เพื่อนำเข้าในภายหลัง</div>
+      </div>
+      <button class="btn btn-backup" onclick="exportJSON()">ดาวน์โหลด JSON</button>
+    </div>
+    <div class="backup-box">
+      <div>
+        <div class="title">📥 นำเข้าข้อมูล (JSON)</div>
+        <div class="sub">นำเข้าไฟล์ .json ที่สำรองไว้ — ข้อมูลจะถูกรวม (merge) ไม่ทับข้อมูลเดิม</div>
+      </div>
+      <button class="btn btn-restore" onclick="document.getElementById('restoreInput').click()">เลือกไฟล์ JSON</button>
+      <input type="file" id="restoreInput" accept=".json" onchange="importJSON(this)" />
+    </div>
+    <div class="backup-box">
+      <div>
+        <div class="title">📊 ส่งออก CSV</div>
+        <div class="sub">ดาวน์โหลดข้อมูลเป็น Excel (.csv) พร้อมทุก field</div>
+      </div>
+      <button class="btn btn-export" onclick="exportCSV()">ดาวน์โหลด CSV</button>
+    </div>
+    <div class="backup-box" style="background:#fff5f5;border:1.5px solid #fed7d7;">
+      <div>
+        <div class="title" style="color:#e53e3e;">🗑️ ล้างข้อมูลทั้งหมด</div>
+        <div class="sub">ลบข้อมูลผู้ลงทะเบียนทั้งหมดออกจากระบบ (ไม่สามารถกู้คืนได้)</div>
+      </div>
+      <button class="btn btn-clear" onclick="confirmClear()">ล้างข้อมูล</button>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog -->
+<div class="overlay" id="overlay">
+  <div class="dialog">
+    <h3 id="dialogTitle">ยืนยัน</h3>
+    <p  id="dialogMsg"></p>
+    <div class="dialog-btns">
+      <button class="btn-cancel"  onclick="closeDialog()">ยกเลิก</button>
+      <button class="btn-confirm" id="dialogConfirmBtn">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── Data ── */
+function getData() { return JSON.parse(localStorage.getItem('registrations') || '[]'); }
+function saveData(l) { localStorage.setItem('registrations', JSON.stringify(l)); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function pct(n,t) { return t ? Math.round(n/t*100)+'%' : '0%'; }
+function avg(arr) { return arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : null; }
+
+const GOAL_LBL = { lose:'ลดน้ำหนัก 🔥', maintain:'รักษา ⚖️', gain:'เพิ่มกล้าม 💪' };
+const DIET_LBL = { normal:'ทั่วไป', veggie:'มังสวิรัติ', vegan:'วีแกน', halal:'ฮาลาล', je:'เจ' };
+const ACT_LBL  = { '1.2':'นั่งทำงาน', '1.375':'เคลื่อนไหวน้อย', '1.55':'ปานกลาง', '1.725':'ออกกำลังหนัก', '1.9':'หนักมาก' };
+
+/* ─── Tab ── */
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active',['dashboard','table','backup'][i]===name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if (name==='dashboard') renderDashboard();
+  if (name==='table')     { currentPage=1; renderTable(); }
+}
+
+/* ─── Chart instances ── */
+let genderChart=null, activityChart=null, monthChart=null;
+
+/* ─── Dashboard ── */
+function renderDashboard() {
+  const list = getData(), total = list.length;
+  const males  = list.filter(r=>r.gender==='ชาย').length;
+  const females= list.filter(r=>r.gender==='หญิง').length;
+  const others = total-males-females;
+  const ages   = list.map(r=>+r.age).filter(a=>a>0);
+  const bmis   = list.map(r=>parseFloat(r.bmi)).filter(b=>!isNaN(b));
+  const tdees  = list.map(r=>+r.tdee).filter(t=>!isNaN(t)&&t>0);
+  const avgBmi = avg(bmis), avgTdee = avg(tdees), avgAge = avg(ages);
+
+  const set = (id,v) => document.getElementById(id).textContent = v;
+  set('d-total',  total);
+  set('d-male',   males);   set('d-male-p',   pct(males,total));
+  set('d-female', females); set('d-female-p', pct(females,total));
+  set('d-age',    avgAge ? avgAge.toFixed(1) : '—');
+  set('d-bmi',    avgBmi ? avgBmi.toFixed(1) : '—');
+  set('d-bmi-l',  avgBmi ? bmiLabel(avgBmi) : '—');
+  set('d-tdee',   avgTdee ? Math.round(avgTdee).toLocaleString() : '—');
+  set('d-last',   list.length ? list[list.length-1].date : '—');
+
+  /* Insights */
+  const overweight  = bmis.filter(b=>b>=25).length;
+  const underweight = bmis.filter(b=>b<18.5).length;
+  const goalLose    = list.filter(r=>r.goal==='lose').length;
+  const mostBlood   = ['A','B','AB','O'].reduce((a,b)=>list.filter(r=>r.blood===b).length>list.filter(r=>r.blood===a).length?b:a,'A');
+  document.getElementById('insightGrid').innerHTML = [
+    { cls:'risk', icon:'⚠️', title:'น้ำหนักเกิน (BMI≥25)', val: overweight ? `${overweight} คน (${pct(overweight,total)})` : '—', sub:'ควรดูแลพฤติกรรมสุขภาพ' },
+    { cls:'good', icon:'✅', title:'น้ำหนักสมส่วน (BMI 18.5–24.9)', val: bmis.filter(b=>b>=18.5&&b<25).length ? `${bmis.filter(b=>b>=18.5&&b<25).length} คน` : '—', sub:pct(bmis.filter(b=>b>=18.5&&b<25).length,total) },
+    { cls:'info', icon:'🔥', title:'ต้องการลดน้ำหนัก', val: goalLose ? `${goalLose} คน` : '—', sub:pct(goalLose,total) },
+    { cls:'warn', icon:'🩸', title:'กลุ่มเลือดยอดนิยม', val: total ? `กลุ่ม ${mostBlood}` : '—', sub: total ? `${list.filter(r=>r.blood===mostBlood).length} คน` : '' },
+    { cls:'info', icon:'⚡', title:'น้ำหนักน้อย (BMI<18.5)', val: underweight ? `${underweight} คน` : '—', sub:pct(underweight,total) },
+    { cls:'good', icon:'💪', title:'ต้องการเพิ่มกล้ามเนื้อ', val: list.filter(r=>r.goal==='gain').length||'—', sub:list.filter(r=>r.goal==='gain').length?pct(list.filter(r=>r.goal==='gain').length,total):'' },
+  ].map(i=>`
+    <div class="insight-card ${i.cls}">
+      <div class="insight-title">${i.icon} ${i.title}</div>
+      <div class="insight-val">${i.val}</div>
+      <div class="insight-sub">${i.sub}</div>
+    </div>`).join('');
+
+  /* Gender pie */
+  const gCtx = document.getElementById('genderChart').getContext('2d');
+  if (genderChart) genderChart.destroy();
+  genderChart = new Chart(gCtx, {
+    type:'doughnut',
+    data:{ labels:['ชาย','หญิง','ไม่ระบุ'], datasets:[{ data:[males,females,others], backgroundColor:['#4299e1','#ed64a6','#68d391'], borderWidth:2, borderColor:'#fff' }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ font:{size:11}, padding:10 } } } }
+  });
+
+  /* Blood type bars */
+  const BLOODS=['A','B','AB','O']; const maxBl=Math.max(1,...BLOODS.map(b=>list.filter(r=>r.blood===b).length));
+  document.getElementById('bloodBars').innerHTML = BLOODS.map(b=>{
+    const cnt=list.filter(r=>r.blood===b).length;
+    return `<div class="bar-row"><span class="bar-lbl">กลุ่ม ${b}</span><div class="bar-track"><div class="bar-fill ${b}" style="width:${Math.round(cnt/maxBl*100)}%"></div></div><span class="bar-cnt">${cnt}</span></div>`;
+  }).join('');
+
+  /* Age bars */
+  const AG=[{l:'<18',mn:0,mx:17},{l:'18–25',mn:18,mx:25},{l:'26–35',mn:26,mx:35},{l:'36–45',mn:36,mx:45},{l:'46–60',mn:46,mx:60},{l:'60+',mn:61,mx:999}];
+  const ageCts=AG.map(g=>({l:g.l,c:list.filter(r=>+r.age>=g.mn&&+r.age<=g.mx).length}));
+  const maxAg=Math.max(1,...ageCts.map(x=>x.c));
+  document.getElementById('ageBars').innerHTML=ageCts.map(x=>`<div class="bar-row"><span class="bar-lbl">${x.l}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(x.c/maxAg*100)}%"></div></div><span class="bar-cnt">${x.c}</span></div>`).join('');
+
+  /* Goal bars */
+  const goals=['lose','maintain','gain']; const maxG=Math.max(1,...goals.map(g=>list.filter(r=>r.goal===g).length));
+  const gColors={'lose':'#fc8181','maintain':'#f6ad55','gain':'#68d391'};
+  document.getElementById('goalBars').innerHTML=goals.map(g=>{
+    const cnt=list.filter(r=>r.goal===g).length;
+    return `<div class="bar-row"><span class="bar-lbl">${{lose:'ลดน้ำหนัก',maintain:'รักษา',gain:'เพิ่มกล้าม'}[g]}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(cnt/maxG*100)}%;background:${gColors[g]}"></div></div><span class="bar-cnt">${cnt}</span></div>`;
+  }).join('');
+
+  /* Activity chart */
+  const actKeys=['1.2','1.375','1.55','1.725','1.9'];
+  const actCts=actKeys.map(k=>list.filter(r=>String(r.activity||'')===k||String(r.tdee&&!r.activity?'':r.activity)===k).length);
+  // Fallback: count by TDEE ranges if activity not stored
+  const aCtx=document.getElementById('activityChart').getContext('2d');
+  if(activityChart) activityChart.destroy();
+  activityChart=new Chart(aCtx,{
+    type:'bar',
+    data:{
+      labels:['นั่งทำงาน','เคลื่อนน้อย','ปานกลาง','หนัก','หนักมาก'],
+      datasets:[{data:actCts,backgroundColor:['#c3dafe','#a3bffa','#7f9cf5','#667eea','#5a67d8'],borderRadius:6}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+
+  /* BMI bars */
+  const BG=[{l:'น้ำหนักน้อย',mn:0,mx:18.49},{l:'สมส่วน',mn:18.5,mx:22.9},{l:'เกินเล็กน้อย',mn:23,mx:24.9},{l:'น้ำหนักเกิน',mn:25,mx:999}];
+  const bmiCts=BG.map(g=>({l:g.l,c:bmis.filter(b=>b>=g.mn&&b<=g.mx).length}));
+  const maxBm=Math.max(1,...bmiCts.map(x=>x.c));
+  const bmiColors=['#63b3ed','#68d391','#f6ad55','#fc8181'];
+  document.getElementById('bmiBars').innerHTML=bmiCts.map((x,i)=>`<div class="bar-row"><span class="bar-lbl">${x.l}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(x.c/maxBm*100)}%;background:${bmiColors[i]}"></div></div><span class="bar-cnt">${x.c}</span></div>`).join('');
+
+  /* Monthly bar */
+  const mc={};
+  list.forEach(r=>{ const p=(r.date||'').split('/'); if(p.length>=3){const k=p[2].slice(-4)+'-'+p[1].padStart(2,'0');mc[k]=(mc[k]||0)+1;} });
+  const sm=Object.keys(mc).sort();
+  const TH=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const mCtx=document.getElementById('monthChart').getContext('2d');
+  if(monthChart) monthChart.destroy();
+  monthChart=new Chart(mCtx,{
+    type:'bar',
+    data:{ labels:sm.map(m=>{const[y,mo]=m.split('-');return TH[+mo-1]+' '+y;}), datasets:[{label:'ผู้ลงทะเบียน',data:sm.map(m=>mc[m]),backgroundColor:'rgba(102,126,234,.75)',borderRadius:6}] },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+/* ─── Table + Pagination ── */
+const PAGE_SIZE=10; let currentPage=1;
+
+function renderTable() {
+  const q   = (document.getElementById('searchBox').value||'').toLowerCase();
+  const fg  = document.getElementById('f-gender').value;
+  const fb  = document.getElementById('f-blood').value;
+  const fgo = document.getElementById('f-goal').value;
+  const fbmi= document.getElementById('f-bmi').value;
+
+  const GC  = {ชาย:'g-m',หญิง:'g-f'};
+  const BC  = {A:'bl-A',B:'bl-B',AB:'bl-AB',O:'bl-O'};
+  const GoC = {lose:'goal-l',maintain:'goal-m',gain:'goal-g'};
+
+  const all = getData().filter(r=>{
+    const match = (r.name||'').toLowerCase().includes(q)||
+      (r.email||'').toLowerCase().includes(q)||(r.phone||'').includes(q);
+    const gOk  = !fg  || r.gender===fg;
+    const bOk  = !fb  || r.blood===fb;
+    const goOk = !fgo || r.goal===fgo;
+    const bmi  = parseFloat(r.bmi);
+    const bmiOk= !fbmi||(fbmi==='low'&&bmi<18.5)||(fbmi==='ok'&&bmi>=18.5&&bmi<25)||(fbmi==='over'&&bmi>=25);
+    return match&&gOk&&bOk&&goOk&&bmiOk;
+  });
+
+  const totalPages = Math.ceil(all.length/PAGE_SIZE)||1;
+  if (currentPage>totalPages) currentPage=1;
+  const page = all.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+  if (!all.length) { tbody.innerHTML=''; empty.style.display='block'; document.getElementById('paginationBar').innerHTML=''; return; }
+  empty.style.display='none';
+
+  tbody.innerHTML = page.map((r,i)=>`<tr>
+    <td><span class="badge">${(currentPage-1)*PAGE_SIZE+i+1}</span></td>
+    <td><strong>${esc(r.name)}</strong></td>
+    <td><span class="badge ${GC[r.gender]||'g-u'}">${esc(r.gender||'—')}</span></td>
+    <td><span class="badge ${BC[r.blood]||''}">${esc(r.blood||'—')}</span></td>
+    <td>${r.age!=null?r.age+' ปี':'—'}</td>
+    <td>${r.birthday?fmtBD(r.birthday):'—'}</td>
+    <td>${r.height?r.height+' ซม.':'—'}</td>
+    <td>${r.weight?r.weight+' กก.':'—'}</td>
+    <td><span class="${bmiClass(r.bmi)}">${r.bmi||'—'}</span></td>
+    <td>${r.tdee?(+r.tdee).toLocaleString()+' kcal':'—'}</td>
+    <td>${r.goal?`<span class="badge ${GoC[r.goal]||''}">${GOAL_LBL[r.goal]||r.goal}</span>`:'—'}</td>
+    <td>${r.diet?DIET_LBL[r.diet]||r.diet:'—'}</td>
+    <td>${esc(r.email)}</td>
+    <td>${esc(r.phone)}</td>
+    <td style="color:#999;font-size:11px;">${esc(r.date)}</td>
+    <td><button class="delete-btn" onclick="confirmDelete(${r.id})">✕</button></td>
+  </tr>`).join('');
+
+  /* Pagination */
+  const bar = document.getElementById('paginationBar');
+  if (totalPages<=1) { bar.innerHTML=''; return; }
+  let html=`<span class="page-info">แสดง ${(currentPage-1)*PAGE_SIZE+1}–${Math.min(currentPage*PAGE_SIZE,all.length)} จาก ${all.length} รายการ</span>`;
+  html+=`<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+  for(let p=1;p<=totalPages;p++){
+    if(totalPages>7&&p>2&&p<totalPages-1&&Math.abs(p-currentPage)>1){ if(p===3||p===totalPages-2) html+='<span style="padding:0 4px;color:#aaa">…</span>'; continue; }
+    html+=`<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+  }
+  html+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+  bar.innerHTML=html;
+}
+function goPage(p) { currentPage=p; renderTable(); }
+
+/* ─── Helpers ── */
+function fmtBD(d) { if(!d)return'—'; const[y,m,dd]=d.split('-'); return `${+dd}/${+m}/${+y+543}`; }
+function bmiLabel(b) { return b<18.5?'น้ำหนักน้อย':b<23?'สมส่วน':b<25?'เกินเล็กน้อย':'น้ำหนักเกิน'; }
+function bmiClass(b) { const v=parseFloat(b); if(isNaN(v))return''; return v<18.5?'bmi-low':v<25?'bmi-ok':'bmi-high'; }
+
+/* ─── Dialog ── */
+function confirmDelete(id) {
+  showDialog('ลบรายการนี้?','ข้อมูลจะถูกลบถาวร',()=>{ saveData(getData().filter(r=>r.id!==id)); renderTable(); renderDashboard(); closeDialog(); });
+}
+function confirmClear() {
+  showDialog('ล้างข้อมูลทั้งหมด?','รายชื่อทั้งหมดจะถูกลบถาวร',()=>{ localStorage.removeItem('registrations'); renderTable(); renderDashboard(); closeDialog(); });
+}
+function showDialog(t,m,fn) {
+  document.getElementById('dialogTitle').textContent=t;
+  document.getElementById('dialogMsg').textContent=m;
+  document.getElementById('dialogConfirmBtn').onclick=fn;
+  document.getElementById('overlay').classList.add('show');
+}
+function closeDialog() { document.getElementById('overlay').classList.remove('show'); }
+document.getElementById('overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeDialog(); });
+
+/* ─── Export CSV ── */
+function exportCSV() {
+  const list=getData();
+  if(!list.length){alert('ไม่มีข้อมูล');return;}
+  const hdr=['#','ชื่อ-นามสกุล','เพศ','กลุ่มเลือด','อายุ','วันเกิด','ส่วนสูง(ซม.)','น้ำหนัก(กก.)','BMI','TDEE(kcal)','เป้าหมาย','รูปแบบอาหาร','อีเมล','เบอร์โทร','วันที่ลงทะเบียน'];
+  const rows=[hdr,...list.map((r,i)=>[i+1,r.name,r.gender||'',r.blood||'',r.age||'',r.birthday?fmtBD(r.birthday):'',r.height||'',r.weight||'',r.bmi||'',r.tdee||'',GOAL_LBL[r.goal]||r.goal||'',DIET_LBL[r.diet]||r.diet||'',r.email,r.phone,r.date])];
+  const csv='﻿'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  dl(new Blob([csv],{type:'text/csv;charset=utf-8'}),'รายชื่อผู้ลงทะเบียน.csv');
+}
+
+/* ─── JSON Backup ── */
+function exportJSON() {
+  const list=getData();
+  if(!list.length){alert('ไม่มีข้อมูล');return;}
+  const blob=new Blob([JSON.stringify({exported:new Date().toISOString(),count:list.length,data:list},null,2)],{type:'application/json'});
+  dl(blob,`backup_${new Date().toISOString().split('T')[0]}.json`);
+}
+function importJSON(input) {
+  const file=input.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try {
+      const obj=JSON.parse(e.target.result);
+      const incoming=Array.isArray(obj)?obj:(obj.data||[]);
+      if(!incoming.length){alert('ไม่พบข้อมูลในไฟล์');return;}
+      const existing=getData();
+      const existingIds=new Set(existing.map(r=>r.id));
+      const merged=[...existing,...incoming.filter(r=>!existingIds.has(r.id))];
+      saveData(merged);
+      alert(`นำเข้าสำเร็จ! เพิ่ม ${merged.length-existing.length} รายการใหม่`);
+      renderDashboard();
+    } catch(err){ alert('ไฟล์ไม่ถูกต้อง: '+err.message); }
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+function dl(blob,name) { const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); }
+
+/* ─── Init ── */
+renderDashboard();
+</script>
+</body>
+</html>

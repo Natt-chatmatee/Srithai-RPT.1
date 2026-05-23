@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แบบสอบถามสุขภาพ</title>
+  <style>
+    @media print {
+      .topbar, .btn-row, nav, .preview-side, .form-side { display: none !important; }
+      body { background: #fff !important; padding: 0 !important; }
+      .card { box-shadow: none !important; max-width: 100% !important; padding: 20px !important; }
+      #resultBox { display: block !important; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 80px 16px 40px;
+    }
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; justify-content: flex-end; padding: 12px 20px; z-index: 10;
+    }
+    .topbar a {
+      color: rgba(255,255,255,.9); text-decoration: none; font-size: 13px; font-weight: 600;
+      background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.4);
+      border-radius: 8px; padding: 7px 16px; backdrop-filter: blur(4px); transition: background .2s;
+    }
+    .topbar a:hover { background: rgba(255,255,255,.28); }
+
+    .card {
+      background: #fff; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+      padding: 36px 32px; width: 100%; max-width: 980px;
+    }
+    .card-header { text-align: center; margin-bottom: 24px; }
+    .card-header h1 { font-size: 22px; color: #2d2d2d; font-weight: 800; }
+    .card-header p { color: #999; font-size: 13px; margin-top: 4px; }
+
+    /* ── Main 2-column grid ── */
+    .main-grid {
+      display: grid; grid-template-columns: 1.15fr 1fr; gap: 28px;
+    }
+    @media (max-width: 880px) {
+      .main-grid { grid-template-columns: 1fr; gap: 20px; }
+      .preview-side { position: static !important; order: -1; }
+    }
+
+    /* ── FORM SIDE ── */
+    .section-label { font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin: 14px 0 10px; }
+    .section-label:first-child { margin-top: 0; }
+    .divider { border: none; border-top: 1px solid #e2e8f0; margin: 4px 0 14px; }
+    .form-group { margin-bottom: 13px; }
+    .form-row { display: flex; gap: 10px; }
+    .form-row .form-group { flex: 1; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 5px; }
+    label .req { color: #e53e3e; margin-left: 3px; }
+    input, select {
+      width: 100%; padding: 9px 12px; border: 2px solid #e2e8f0; border-radius: 10px;
+      font-size: 13px; color: #2d2d2d; background: #fff;
+      transition: border-color .2s, box-shadow .2s; outline: none;
+    }
+    input:focus, select:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,.15); }
+    input::placeholder { color: #bbb; }
+    input.err, select.err { border-color: #e53e3e; animation: shake .3s; }
+    .err-msg { color: #e53e3e; font-size: 11px; margin-top: 3px; display: none; }
+    .err-msg.show { display: block; }
+    button[type="submit"] {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 700;
+      cursor: pointer; margin-top: 10px; transition: opacity .2s, transform .1s;
+    }
+    button[type="submit"]:hover { opacity: .92; }
+    button[type="submit"]:active { transform: scale(.98); }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
+    /* ── PREVIEW SIDE (RIGHT) ── */
+    .preview-side {
+      position: sticky; top: 20px; height: fit-content;
+    }
+    .character-card {
+      background: linear-gradient(135deg, #fef5ff 0%, #f0f4ff 100%);
+      border-radius: 18px; padding: 20px 16px; text-align: center;
+      border: 1.5px solid #e2e8f0; overflow: hidden; position: relative;
+    }
+    .character-svg {
+      width: 200px; height: 240px;
+      animation: float 4s ease-in-out infinite;
+      filter: drop-shadow(0 6px 16px rgba(102,126,234,.15));
+    }
+
+    /* ── Character animations ── */
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%     { transform: translateY(-5px); }
+    }
+    @keyframes breathe {
+      0%,100% { transform: scaleY(1); }
+      50%     { transform: scaleY(1.025); }
+    }
+    @keyframes blink {
+      0%, 88%, 100% { transform: scaleY(1); }
+      92%, 96%      { transform: scaleY(.1); }
+    }
+    @keyframes sway {
+      0%,100% { transform: rotate(-1.5deg); }
+      50%     { transform: rotate(1.5deg); }
+    }
+    @keyframes wave {
+      0%,100% { transform: rotate(-25deg); }
+      50%     { transform: rotate(15deg); }
+    }
+    @keyframes sparkle {
+      0%,100% { opacity: .3; transform: scale(.8); }
+      50%     { opacity: 1; transform: scale(1.2); }
+    }
+    @keyframes popIn {
+      0%   { transform: scale(0); }
+      80%  { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    .anim-body { animation: breathe 3s ease-in-out infinite; transform-origin: 120px 190px; }
+    .anim-eye  { animation: blink 5s infinite; transform-origin: center; transform-box: fill-box; }
+    .anim-hair { animation: sway 5s ease-in-out infinite; transform-origin: 120px 70px; }
+    .anim-wave { animation: wave 1.2s ease-in-out infinite; transform-origin: 150px 160px; }
+    .sparkle   { animation: sparkle 2s ease-in-out infinite; }
+    .sparkle.s2{ animation-delay: .5s; }
+    .sparkle.s3{ animation-delay: 1s; }
+
+    /* Body transition */
+    #bodyEllipse, #headCircle { transition: rx .4s ease, ry .4s ease, fill .4s ease; }
+
+    /* Character message */
+    .char-msg {
+      margin-top: 10px; font-size: 13px; font-weight: 700; color: #667eea;
+      min-height: 36px; line-height: 1.4;
+    }
+
+    /* Progress bar */
+    .progress-wrap { margin: 12px 0; }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: #888; margin-bottom: 4px; font-weight: 600;
+    }
+    .progress-track {
+      background: #e2e8f0; border-radius: 99px; height: 7px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 99px; transition: width .5s ease;
+    }
+
+    /* Live stats grid */
+    .live-stats { margin-top: 14px; }
+    .stats-title {
+      font-size: 11px; font-weight: 700; color: #aaa;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;
+    }
+    .stats-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .stat-tile {
+      background: #fff; border: 1.5px solid #e2e8f0;
+      border-radius: 12px; padding: 10px 12px;
+      transition: border-color .3s, transform .2s;
+    }
+    .stat-tile.active { border-color: #667eea; background: #f7f8ff; }
+    .stat-tile .st-top { display: flex; align-items: center; gap: 6px; }
+    .stat-tile .st-icon { font-size: 16px; }
+    .stat-tile .st-lbl { font-size: 10px; color: #888; font-weight: 700; text-transform: uppercase; }
+    .stat-tile .st-val { font-size: 16px; font-weight: 800; color: #667eea; margin-top: 4px; }
+    .stat-tile.active .st-val { animation: popIn .3s ease; }
+    .stat-tile .st-sub { font-size: 10px; color: #aaa; margin-top: 1px; }
+
+    /* BMI badge variations */
+    .bmi-low  { color: #3182ce !important; }
+    .bmi-ok   { color: #38a169 !important; }
+    .bmi-warn { color: #dd6b20 !important; }
+    .bmi-high { color: #e53e3e !important; }
+
+    /* ===== RESULT SECTION ===== */
+    #resultBox { display: none; }
+    .res-hero {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 14px; padding: 20px; text-align: center; color: #fff; margin-bottom: 16px;
+    }
+    .res-hero h2 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+    .res-hero .sub { font-size: 13px; opacity: .85; }
+    .res-hero .chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+    .res-hero .chip { background: rgba(255,255,255,.2); border-radius: 99px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
+
+    .metric-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 14px; }
+    @media(max-width:480px) { .metric-grid { grid-template-columns: repeat(2,1fr); } }
+    .metric {
+      background: #f7f8ff; border-radius: 12px; padding: 12px 10px;
+      border-top: 3px solid #667eea; text-align: center;
+    }
+    .metric.r { border-color: #fc8181; background: #fff5f5; }
+    .metric.g { border-color: #68d391; background: #f0fff4; }
+    .metric.o { border-color: #f6ad55; background: #fffaf0; }
+    .metric.p { border-color: #9f7aea; background: #faf5ff; }
+    .metric.b { border-color: #63b3ed; background: #ebf8ff; }
+    .metric-lbl { font-size: 10px; font-weight: 700; color: #999; text-transform: uppercase; }
+    .metric-val { font-size: 19px; font-weight: 800; color: #667eea; margin: 3px 0 2px; }
+    .metric.r .metric-val { color: #e53e3e; }
+    .metric.g .metric-val { color: #38a169; }
+    .metric.o .metric-val { color: #dd6b20; }
+    .metric.p .metric-val { color: #805ad5; }
+    .metric.b .metric-val { color: #2b6cb0; }
+    .metric-sub { font-size: 10px; color: #aaa; }
+
+    .ws-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .ws-card { background: #fff; border-radius: 12px; padding: 14px; border: 1.5px solid #e2e8f0; text-align: center; }
+    .ws-icon { font-size: 28px; }
+    .ws-val { font-size: 22px; font-weight: 800; color: #667eea; }
+    .ws-lbl { font-size: 11px; color: #888; margin-top: 2px; }
+
+    .section { border-radius: 14px; padding: 15px 16px; margin-bottom: 12px; }
+    .sec-goal { background: #fffaf0; border: 1.5px solid #fbd38d; }
+    .sec-macro { background: #f0fff4; border: 1.5px solid #c6f6d5; }
+    .sec-blood { background: #fff5f5; border: 1.5px solid #fed7d7; }
+    .sec-zodiac { background: #faf5ff; border: 1.5px solid #e9d8fd; }
+    .sec-menu { background: #f7f8ff; border: 1.5px solid #c3dafe; }
+    .sec-plan { background: #f0fff4; border: 1.5px solid #9ae6b4; }
+    .sec-title { font-size: 13px; font-weight: 800; color: #2d2d2d; margin-bottom: 10px; }
+    .sec-note { font-size: 12px; color: #666; margin-top: 8px; line-height: 1.5; }
+    .macro-bar { margin-bottom: 8px; }
+    .macro-bar-top { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; color: #555; font-weight: 600; }
+    .bar-track { background: #e2e8f0; border-radius: 99px; height: 10px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 99px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { background: #ebf4ff; color: #667eea; border-radius: 99px; padding: 4px 11px; font-size: 12px; font-weight: 600; }
+    .chip.red { background: #fff5f5; color: #e53e3e; }
+    .chip.green { background: #f0fff4; color: #276749; }
+    .chip.purple { background: #faf5ff; color: #6b46c1; }
+    .chip.orange { background: #fffaf0; color: #c05621; }
+    .week-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-top: 8px; }
+    .day-card { background: #fff; border-radius: 8px; padding: 6px 4px; text-align: center; border: 1.5px solid #e2e8f0; }
+    .day-card.active { border-color: #667eea; background: #ebf4ff; }
+    .day-card.rest { border-color: #c6f6d5; background: #f0fff4; }
+    .day-name { font-size: 9px; font-weight: 700; color: #888; }
+    .day-act { font-size: 10px; font-weight: 600; color: #667eea; margin-top: 2px; line-height: 1.2; }
+    .day-card.rest .day-act { color: #38a169; }
+    .menu-meal { margin-bottom: 10px; }
+    .meal-title { font-size: 12px; font-weight: 700; color: #2b6cb0; margin-bottom: 5px; }
+    .btn-row { display: flex; gap: 8px; margin-top: 18px; justify-content: center; flex-wrap: wrap; }
+    .btn { border-radius: 10px; padding: 10px 20px; font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity .2s; border: none; }
+    .btn-outline { background: none; border: 2px solid #667eea; color: #667eea; }
+    .btn-outline:hover { background: #667eea; color: #fff; }
+    .btn-fill { background: #667eea; color: #fff; text-decoration: none; display: inline-block; }
+    .btn-fill:hover { opacity: .85; }
+    .btn-print { background: #e2e8f0; color: #444; }
+    .btn-print:hover { background: #cbd5e0; }
+  </style>
+</head>
+<body>
+  <div class="topbar"><a href="/admin.html">⚙️ ระบบหลังบ้าน</a></div>
+
+  <div class="card">
+    <div class="card-header">
+      <h1>📋 แบบสอบถามสุขภาพ</h1>
+      <p>กรอกข้อมูลเพื่อรับคำแนะนำสุขภาพเฉพาะบุคคล</p>
+    </div>
+
+    <!-- ============= TWO COLUMN GRID ============= -->
+    <div class="main-grid" id="mainGrid">
+
+      <!-- ===== FORM (LEFT) ===== -->
+      <div class="form-side">
+        <form id="surveyForm" novalidate>
+          <div class="section-label">ข้อมูลการติดต่อ</div>
+          <div class="form-group">
+            <label for="name">ชื่อ-นามสกุล <span class="req">*</span></label>
+            <input type="text" id="name" placeholder="เช่น สมชาย ใจดี" />
+            <div class="err-msg" id="e-name">กรุณากรอกชื่อ-นามสกุล</div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">อีเมล <span class="req">*</span></label>
+              <input type="email" id="email" placeholder="email@example.com" />
+              <div class="err-msg" id="e-email">อีเมลไม่ถูกต้อง</div>
+            </div>
+            <div class="form-group">
+              <label for="phone">เบอร์โทร <span class="req">*</span></label>
+              <input type="tel" id="phone" placeholder="081-234-5678" maxlength="15" />
+              <div class="err-msg" id="e-phone">เบอร์ไม่ถูกต้อง</div>
+            </div>
+          </div>
+
+          <hr class="divider"/>
+          <div class="section-label">ข้อมูลส่วนตัว</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="gender">เพศ <span class="req">*</span></label>
+              <select id="gender"><option value="">-- เลือก --</option><option>ชาย</option><option>หญิง</option><option>ไม่ระบุ</option></select>
+              <div class="err-msg" id="e-gender">กรุณาเลือกเพศ</div>
+            </div>
+            <div class="form-group">
+              <label for="blood">กลุ่มเลือด <span class="req">*</span></label>
+              <select id="blood"><option value="">-- เลือก --</option><option>A</option><option>B</option><option>AB</option><option>O</option></select>
+              <div class="err-msg" id="e-blood">กรุณาเลือกกลุ่มเลือด</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="birthday">วันเกิด <span class="req">*</span></label>
+            <input type="date" id="birthday" />
+            <div class="err-msg" id="e-birthday">กรุณาระบุวันเกิด</div>
+          </div>
+
+          <hr class="divider"/>
+          <div class="section-label">ข้อมูลสุขภาพ</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="height">ส่วนสูง (ซม.) <span class="req">*</span></label>
+              <input type="number" id="height" placeholder="170" min="100" max="250" />
+              <div class="err-msg" id="e-height">กรุณากรอก 100–250</div>
+            </div>
+            <div class="form-group">
+              <label for="weight">น้ำหนัก (กก.) <span class="req">*</span></label>
+              <input type="number" id="weight" placeholder="65" min="20" max="300" />
+              <div class="err-msg" id="e-weight">กรุณากรอก 20–300</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="activity">ระดับกิจกรรม <span class="req">*</span></label>
+            <select id="activity">
+              <option value="">-- เลือก --</option>
+              <option value="1.2">นั่งทำงานส่วนใหญ่</option>
+              <option value="1.375">เคลื่อนไหวเล็กน้อย (1–3 วัน/สัปดาห์)</option>
+              <option value="1.55">ออกกำลังกายปานกลาง (3–5 วัน/สัปดาห์)</option>
+              <option value="1.725">ออกกำลังกายหนัก (6–7 วัน/สัปดาห์)</option>
+              <option value="1.9">ออกกำลังกายหนักมาก / งานใช้แรง</option>
+            </select>
+            <div class="err-msg" id="e-activity">กรุณาเลือกระดับกิจกรรม</div>
+          </div>
+
+          <hr class="divider"/>
+          <div class="section-label">เป้าหมายและอาหาร</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="goal">เป้าหมายสุขภาพ <span class="req">*</span></label>
+              <select id="goal">
+                <option value="">-- เลือก --</option>
+                <option value="lose">ลดน้ำหนัก 🔥</option>
+                <option value="maintain">รักษาน้ำหนัก ⚖️</option>
+                <option value="gain">เพิ่มกล้ามเนื้อ 💪</option>
+              </select>
+              <div class="err-msg" id="e-goal">กรุณาเลือกเป้าหมาย</div>
+            </div>
+            <div class="form-group">
+              <label for="diet">รูปแบบอาหาร <span class="req">*</span></label>
+              <select id="diet">
+                <option value="">-- เลือก --</option>
+                <option value="normal">ทั่วไป</option>
+                <option value="veggie">มังสวิรัติ</option>
+                <option value="vegan">วีแกน</option>
+                <option value="halal">ฮาลาล</option>
+                <option value="je">เจ</option>
+              </select>
+              <div class="err-msg" id="e-diet">กรุณาเลือกรูปแบบอาหาร</div>
+            </div>
+          </div>
+
+          <button type="submit">คำนวณและรับคำแนะนำ →</button>
+        </form>
+      </div>
+
+      <!-- ===== PREVIEW (RIGHT) ===== -->
+      <div class="preview-side">
+
+        <!-- Character card -->
+        <div class="character-card">
+          <svg class="character-svg" viewBox="0 0 240 290" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sparkles around character -->
+            <text class="sparkle" x="20"  y="40" font-size="14" fill="#fbbf24">✨</text>
+            <text class="sparkle s2" x="200" y="60" font-size="14" fill="#a78bfa">✨</text>
+            <text class="sparkle s3" x="30"  y="180" font-size="14" fill="#f472b6">✨</text>
+            <text class="sparkle s2" x="205" y="200" font-size="14" fill="#60a5fa">✨</text>
+
+            <!-- Shadow under feet -->
+            <ellipse cx="120" cy="280" rx="55" ry="5" fill="rgba(0,0,0,.12)"/>
+
+            <!-- Body group (breathes) -->
+            <g class="anim-body">
+              <!-- Legs -->
+              <rect x="100" y="225" width="14" height="50" rx="7" fill="#4a5568"/>
+              <rect x="126" y="225" width="14" height="50" rx="7" fill="#4a5568"/>
+              <!-- Shoes -->
+              <ellipse cx="107" cy="278" rx="11" ry="5" fill="#2d3748"/>
+              <ellipse cx="133" cy="278" rx="11" ry="5" fill="#2d3748"/>
+
+              <!-- Body (shirt) -->
+              <ellipse id="bodyEllipse" cx="120" cy="190" rx="38" ry="48" fill="#90cdf4"/>
+
+              <!-- Shirt detail -->
+              <path id="shirtCollar" d="M105 152 Q120 165 135 152" stroke="#fff" stroke-width="2" fill="none" opacity=".7"/>
+
+              <!-- Left arm (static) -->
+              <path d="M86 160 Q70 195 78 230" stroke="#fde0c5" stroke-width="13" fill="none" stroke-linecap="round"/>
+              <circle cx="78" cy="232" r="8" fill="#fde0c5"/>
+            </g>
+
+            <!-- Right arm (waves when form is complete) -->
+            <g id="rightArm">
+              <path d="M154 160 Q170 195 162 230" stroke="#fde0c5" stroke-width="13" fill="none" stroke-linecap="round"/>
+              <circle cx="162" cy="232" r="8" fill="#fde0c5"/>
+            </g>
+
+            <!-- Head group -->
+            <g>
+              <!-- Long hair back (for female) -->
+              <ellipse id="hairBack" cx="120" cy="120" rx="48" ry="55" fill="#5b3b1f" style="display:none"/>
+
+              <!-- Head -->
+              <circle id="headCircle" cx="120" cy="105" r="42" fill="#fde0c5"/>
+
+              <!-- Hair top (animates sway) -->
+              <g class="anim-hair">
+                <path id="hairTop" d="M78 92 Q120 50 162 92 Q150 75 130 70 Q110 65 90 72 Q82 78 78 92 Z" fill="#5b3b1f"/>
+              </g>
+
+              <!-- Cheeks -->
+              <ellipse cx="92" cy="118" rx="6" ry="4" fill="#fbb6ce" opacity=".7"/>
+              <ellipse cx="148" cy="118" rx="6" ry="4" fill="#fbb6ce" opacity=".7"/>
+
+              <!-- Eyes (blink) -->
+              <ellipse class="anim-eye" cx="105" cy="108" rx="3.5" ry="6" fill="#1a202c"/>
+              <ellipse class="anim-eye" cx="135" cy="108" rx="3.5" ry="6" fill="#1a202c"/>
+              <!-- Eye shine -->
+              <circle cx="106" cy="106" r="1.3" fill="#fff"/>
+              <circle cx="136" cy="106" r="1.3" fill="#fff"/>
+
+              <!-- Eyebrows -->
+              <path d="M99 98 Q105 95 111 98"  stroke="#5b3b1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M129 98 Q135 95 141 98" stroke="#5b3b1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+              <!-- Mouth (varies) -->
+              <path id="mouthPath" d="M108 126 Q120 134 132 126"
+                    stroke="#1a202c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            </g>
+          </svg>
+
+          <div class="char-msg" id="charMsg">สวัสดี! ฉันคือเพื่อนสุขภาพของคุณ ✨<br/>กรอกข้อมูลเพื่อรู้จักร่างกายของคุณกัน</div>
+
+          <!-- Progress bar -->
+          <div class="progress-wrap">
+            <div class="progress-label">
+              <span>ความคืบหน้า</span>
+              <span id="progressText">0 / 11</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live stats -->
+        <div class="live-stats">
+          <div class="stats-title">📊 ค่าร่างกายของคุณ (อัปเดตสด)</div>
+          <div class="stats-grid">
+            <div class="stat-tile" id="t-bmi">
+              <div class="st-top"><span class="st-icon">⚖️</span><span class="st-lbl">BMI</span></div>
+              <div class="st-val" id="ls-bmi">—</div>
+              <div class="st-sub" id="ls-bmi-sub">รอข้อมูล</div>
+            </div>
+            <div class="stat-tile" id="t-tdee">
+              <div class="st-top"><span class="st-icon">🔥</span><span class="st-lbl">แคลอรี่/วัน</span></div>
+              <div class="st-val" id="ls-tdee">—</div>
+              <div class="st-sub">kcal (TDEE)</div>
+            </div>
+            <div class="stat-tile" id="t-water">
+              <div class="st-top"><span class="st-icon">💧</span><span class="st-lbl">น้ำ/วัน</span></div>
+              <div class="st-val" id="ls-water">—</div>
+              <div class="st-sub" id="ls-water-sub">ลิตร</div>
+            </div>
+            <div class="stat-tile" id="t-sleep">
+              <div class="st-top"><span class="st-icon">😴</span><span class="st-lbl">การนอน</span></div>
+              <div class="st-val" id="ls-sleep">—</div>
+              <div class="st-sub">ชม./คืน</div>
+            </div>
+            <div class="stat-tile" id="t-age">
+              <div class="st-top"><span class="st-icon">🎂</span><span class="st-lbl">อายุ</span></div>
+              <div class="st-val" id="ls-age">—</div>
+              <div class="st-sub" id="ls-age-sub">ปี</div>
+            </div>
+            <div class="stat-tile" id="t-zodiac">
+              <div class="st-top"><span class="st-icon">⭐</span><span class="st-lbl">ราศี</span></div>
+              <div class="st-val" id="ls-zodiac" style="font-size:13px;">—</div>
+              <div class="st-sub" id="ls-zodiac-sub">รอวันเกิด</div>
+            </div>
+            <div class="stat-tile" id="t-protein">
+              <div class="st-top"><span class="st-icon">🥚</span><span class="st-lbl">โปรตีน</span></div>
+              <div class="st-val" id="ls-protein">—</div>
+              <div class="st-sub">กรัม/วัน</div>
+            </div>
+            <div class="stat-tile" id="t-ideal">
+              <div class="st-top"><span class="st-icon">🎯</span><span class="st-lbl">น้ำหนักเป้า</span></div>
+              <div class="st-val" id="ls-ideal" style="font-size:13px;">—</div>
+              <div class="st-sub" id="ls-ideal-sub">กก.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== RESULT (after submit) ===== -->
+    <div id="resultBox">
+      <div class="res-hero">
+        <h2 id="r-name"></h2>
+        <div class="sub" id="r-sub"></div>
+        <div class="chips" id="r-chips"></div>
+      </div>
+      <div class="metric-grid" id="r-metrics"></div>
+      <div class="ws-row" id="r-ws"></div>
+      <div class="section sec-goal" id="r-goal"></div>
+      <div class="section sec-macro" id="r-macro"></div>
+      <div class="section sec-plan" id="r-exercise"></div>
+      <div class="section sec-blood" id="r-blood"></div>
+      <div class="section sec-zodiac" id="r-zodiac"></div>
+      <div class="section sec-menu" id="r-menu"></div>
+      <div class="btn-row">
+        <button class="btn btn-print" onclick="window.print()">🖨️ พิมพ์</button>
+        <button class="btn btn-outline" onclick="resetForm()">กรอกใหม่</button>
+        <a class="btn btn-fill" href="/admin.html">ดูรายชื่อ</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ─── Data ────────────────────────────────────────────── */
+const BLOOD = {
+  A:  { eat:['ผักใบเขียว','เต้าหู้/ถั่วเหลือง','ปลาทะเล','ข้าวโอ๊ต','มะเขือเทศ','ผลไม้สด'], avoid:['เนื้อแดง','แป้งขัดขาว','นม (มาก)','อาหารทอด'], note:'ย่อยโปรตีนพืชได้ดี ควรเน้นอาหารคลีน' },
+  B:  { eat:['เนื้อแกะ','ผลิตภัณฑ์นม','ผักใบเขียว','ไข่','ข้าวกล้อง','ปลา'], avoid:['ไก่','ข้าวโพด','ถั่วลิสง','ข้าวสาลี'], note:'ยืดหยุ่นสูง แต่หลีกเลี่ยงไก่และข้าวโพด' },
+  AB: { eat:['ปลาทะเล','เต้าหู้','นมไขมันต่ำ','ผักใบเขียว','ผลไม้','ไก่งวง'], avoid:['เนื้อแดงมาก','เมล็ดพืชดิบ','แอลกอฮอล์'], note:'รวมลักษณะ A+B ทานหลากหลายในปริมาณพอดี' },
+  O:  { eat:['เนื้อไม่ติดมัน','ปลา','ผักใบเขียว','ผลไม้','มันเทศ','ถั่วแดง'], avoid:['แป้งสาลี','ข้าวโพด','กะหล่ำปลี','นม (มาก)'], note:'ย่อยโปรตีนสัตว์ได้ดี อ่อนไหวต่อกลูเตน' },
+};
+const ZODIAC_MAP = [
+  { name:'มังกร', icon:'♑', en:'Capricorn',   m1:12,d1:22,m2:1, d2:19, note:'ต้องการแคลเซียม+วิตามินดี',     foods:['ปลาซาร์ดีน','ผักโขม','นมไขมันต่ำ','มะเดื่อ','งา'] },
+  { name:'กุมภ์', icon:'♒', en:'Aquarius',    m1:1, d1:20,m2:2, d2:18, note:'ต้องการสารต้านอนุมูลอิสระ',     foods:['บลูเบอร์รี','ชาเขียว','ถั่วเลนทิล','อาร์ติโชค','สตรอเบอร์รี'] },
+  { name:'มีน',   icon:'♓', en:'Pisces',      m1:2, d1:19,m2:3, d2:20, note:'ต้องการโอเมก้า 3 + ธาตุเหล็ก',  foods:['ปลาแซลมอน','วอลนัท','เมล็ดเชีย','ผักโขม','ไข่'] },
+  { name:'เมษ',   icon:'♈', en:'Aries',       m1:3, d1:21,m2:4, d2:19, note:'ต้องการธาตุเหล็ก + โปรตีน',     foods:['เนื้อวัว','ผักโขม','ถั่วแดง','ฟักทอง','ข้าวกล้อง'] },
+  { name:'พฤษภ', icon:'♉', en:'Taurus',      m1:4, d1:20,m2:5, d2:20, note:'ต้องการไอโอดีน + แร่ธาตุจากดิน',foods:['สาหร่าย','ปลาแซลมอน','มันฝรั่ง','แอปเปิล','ชีส'] },
+  { name:'เมถุน', icon:'♊', en:'Gemini',      m1:5, d1:21,m2:6, d2:20, note:'ต้องการแคลเซียม + วิตามินบี',   foods:['กล้วย','ผักกาด','เมล็ดทานตะวัน','ถั่วลันเตา','นม'] },
+  { name:'กรกฎ',  icon:'♋', en:'Cancer',      m1:6, d1:21,m2:7, d2:22, note:'ต้องการโพแทสเซียม + แมกนีเซียม',foods:['กล้วย','อะโวคาโด','แตงกวา','แตงโม','ข้าวกล้อง'] },
+  { name:'สิงห์', icon:'♌', en:'Leo',         m1:7, d1:23,m2:8, d2:22, note:'ต้องการแมกนีเซียม + สารต้านอนุมูล',foods:['ดาร์กช็อกโกแลต','อัลมอนด์','บลูเบอร์รี','บรอกโคลี','ส้ม'] },
+  { name:'กันย์', icon:'♍', en:'Virgo',       m1:8, d1:23,m2:9, d2:22, note:'ต้องการกากใย + โปรไบโอติก',     foods:['โยเกิร์ต','แอปเปิล','ข้าวโอ๊ต','ผักนึ่ง','กีวี'] },
+  { name:'ตุลย์', icon:'♎', en:'Libra',       m1:9, d1:23,m2:10,d2:22, note:'ต้องการวิตามินเค + แร่ธาตุสมดุล',foods:['คะน้า','กีวี','มะเขือเทศ','ถั่วขาว','น้ำมันมะกอก'] },
+  { name:'พิจิก', icon:'♏', en:'Scorpio',     m1:10,d1:23,m2:11,d2:21, note:'ต้องการสังกะสี + สารต้านเชื้อโรค',foods:['หอยนางรม','กระเทียม','บีทรูท','ทับทิม','ฟักทอง'] },
+  { name:'ธนู',   icon:'♐', en:'Sagittarius', m1:11,d1:22,m2:12,d2:21, note:'ต้องการซิลิกา + วิตามินซี',      foods:['ข้าวโอ๊ต','แตงกวา','มะม่วง','ขมิ้น','น้ำมะพร้าว'] },
+];
+const THAI_ZOD = ['ชวด (หนู)','ฉลู (วัว)','ขาล (เสือ)','เถาะ (กระต่าย)','มะโรง (มังกร)','มะเส็ง (งู)','มะเมีย (ม้า)','มะแม (แพะ)','วอก (ลิง)','ระกา (ไก่)','จอ (สุนัข)','กุน (หมู)'];
+const GOAL_LABELS = { lose:'ลดน้ำหนัก 🔥', maintain:'รักษาน้ำหนัก ⚖️', gain:'เพิ่มกล้ามเนื้อ 💪' };
+const DIET_LABELS = { normal:'ทั่วไป', veggie:'มังสวิรัติ', vegan:'วีแกน', halal:'ฮาลาล', je:'เจ' };
+const PROTEIN_BY_DIET = {
+  normal: { lose:['ไก่อกย่าง','ปลานึ่ง','ไข่ต้ม'], maintain:['เนื้อย่าง','ปลาทอด','ไข่ดาว'], gain:['เนื้อวัวย่าง','ปลาแซลมอน','ไข่คน'] },
+  veggie: { lose:['เต้าหู้แน่น','ถั่วต้ม','ไข่ขาว'], maintain:['เต้าหู้ผัด','ถั่วลูกไก่','ไข่พะโล้'], gain:['เต้าหู้แน่นผัด','ถั่วเหลืองต้ม','นมถั่วเหลือง'] },
+  vegan:  { lose:['เต้าหู้แน่น','ถั่วเลนทิล','เทมเป้'], maintain:['เต้าหู้ผัด','ถั่วดำ','เซตัน'], gain:['เต้าหู้แน่น','ถั่วชิกพี','เซตัน'] },
+  halal:  { lose:['ไก่อกย่าง','ปลานึ่ง','เนื้อวัวฮาลาล'], maintain:['ไก่ผัด','ปลาต้ม','เนื้อแกะ'], gain:['เนื้อวัวฮาลาล','ไก่ย่าง','ปลาแซลมอน'] },
+  je:     { lose:['เต้าหู้','เห็ดหลากชนิด','สาหร่าย'], maintain:['เต้าหู้ผัด','ผักรวม','เห็ดนาง'], gain:['เต้าหู้แน่น','ถั่วเหลือง','เห็ดหูหนู'] },
+};
+const EXERCISE = {
+  lose: {
+    low:  [{d:'จ',t:'เดิน\n30 นาที'},{d:'อ',t:'Yoga\n30 นาที'},{d:'พ',t:'เดิน\n30 นาที'},{d:'พฤ',t:'พัก\n✓'},{d:'ศ',t:'เดิน\n40 นาที'},{d:'ส',t:'ว่ายน้ำ\n30 นาที'},{d:'อา',t:'พัก\n✓'}],
+    high: [{d:'จ',t:'HIIT\n20 นาที'},{d:'อ',t:'Cardio\n30 นาที'},{d:'พ',t:'Weight\n45 นาที'},{d:'พฤ',t:'Cardio\n30 นาที'},{d:'ศ',t:'Weight\n45 นาที'},{d:'ส',t:'Cardio\n30 นาที'},{d:'อา',t:'พัก\n✓'}],
+  },
+  maintain: {
+    low:  [{d:'จ',t:'เดิน\n30 นาที'},{d:'อ',t:'พัก\n✓'},{d:'พ',t:'Yoga\n30 นาที'},{d:'พฤ',t:'เดิน\n30 นาที'},{d:'ศ',t:'พัก\n✓'},{d:'ส',t:'ว่ายน้ำ\n30 นาที'},{d:'อา',t:'พัก\n✓'}],
+    high: [{d:'จ',t:'Weight\n45 นาที'},{d:'อ',t:'Cardio\n30 นาที'},{d:'พ',t:'Weight\n45 นาที'},{d:'พฤ',t:'พัก\n✓'},{d:'ศ',t:'Cardio\n30 นาที'},{d:'ส',t:'Yoga\n30 นาที'},{d:'อา',t:'พัก\n✓'}],
+  },
+  gain: {
+    low:  [{d:'จ',t:'Weight\n(อก)'},{d:'อ',t:'พัก\n✓'},{d:'พ',t:'Weight\n(หลัง)'},{d:'พฤ',t:'Weight\n(ขา)'},{d:'ศ',t:'พัก\n✓'},{d:'ส',t:'Weight\n(ไหล่)'},{d:'อา',t:'พัก\n✓'}],
+    high: [{d:'จ',t:'Weight\n(อก+ไหล่)'},{d:'อ',t:'Weight\n(หลัง+แขน)'},{d:'พ',t:'Weight\n(ขา)'},{d:'พฤ',t:'พัก\n✓'},{d:'ศ',t:'Weight\n(อก)'},{d:'ส',t:'Weight\n(หลัง)'},{d:'อา',t:'Cardio\n20 นาที'}],
+  },
+};
+
+/* ─── Helpers ────────────────────────────────────────── */
+function calcAge(dob) {
+  if (!dob) return null;
+  const t=new Date(),b=new Date(dob); let a=t.getFullYear()-b.getFullYear();
+  if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate())) a--;
+  return a;
+}
+function getZodiac(dob) {
+  if (!dob) return null;
+  const d=new Date(dob),mo=d.getMonth()+1,day=d.getDate();
+  return ZODIAC_MAP.find(s=>(mo===s.m1&&day>=s.d1)||(mo===s.m2&&day<=s.d2)) || ZODIAC_MAP[0];
+}
+function sleepRec(age) {
+  if (age<13) return '9–11';
+  if (age<18) return '8–10';
+  if (age<65) return '7–9';
+  return '7–8';
+}
+function chip(text,cls='') { return `<span class="chip ${cls}">${text}</span>`; }
+function setText(id,v){ document.getElementById(id).textContent = v; }
+
+/* ─── Live preview update ────────────────────────────── */
+const ALL_FIELDS = ['name','email','phone','gender','blood','birthday','height','weight','activity','goal','diet'];
+
+['gender','blood','birthday','height','weight','activity','goal','diet','name','email','phone'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',  updateLivePreview);
+  document.getElementById(id).addEventListener('change', updateLivePreview);
+});
+
+document.getElementById('birthday').max = new Date().toISOString().split('T')[0];
+
+function updateLivePreview() {
+  /* Field completion */
+  const filled = ALL_FIELDS.filter(id=>{
+    const v = document.getElementById(id).value;
+    return v && v.trim() !== '';
+  });
+  const completed = filled.length;
+  const total = ALL_FIELDS.length;
+  setText('progressText', `${completed} / ${total}`);
+  document.getElementById('progressFill').style.width = (completed/total*100) + '%';
+
+  /* Encouraging message */
+  let msg = '';
+  if (completed === 0)       msg = 'สวัสดี! ฉันคือเพื่อนสุขภาพของคุณ ✨<br/>กรอกข้อมูลเพื่อรู้จักร่างกายของคุณกัน';
+  else if (completed < 4)    msg = 'เริ่มได้ดี! 💪<br/>กรอกต่อนะ ฉันรอดูข้อมูลของคุณ';
+  else if (completed < 8)    msg = 'เกือบครึ่งทางแล้ว 🌟<br/>ทำได้ดีมาก!';
+  else if (completed < total) msg = 'อีกนิดเดียวเอง! 🎯<br/>ใกล้รู้ผลแล้วนะ';
+  else                       msg = 'พร้อมแล้ว! 🎉<br/>กดปุ่ม "คำนวณ" เพื่อรับคำแนะนำ';
+  document.getElementById('charMsg').innerHTML = msg;
+
+  /* Update character based on gender */
+  const gender = document.getElementById('gender').value;
+  const hairBack = document.getElementById('hairBack');
+  const hairTop  = document.getElementById('hairTop');
+  const bodyEl   = document.getElementById('bodyEllipse');
+  if (gender === 'หญิง') {
+    hairBack.style.display = '';
+    hairTop.setAttribute('d', 'M75 95 Q120 45 165 95 Q160 70 140 65 Q120 58 100 65 Q80 72 75 95 Z');
+    hairTop.setAttribute('fill', '#8b4513');
+    hairBack.setAttribute('fill', '#8b4513');
+    bodyEl.setAttribute('fill', '#fbb6ce');
+  } else if (gender === 'ชาย') {
+    hairBack.style.display = 'none';
+    hairTop.setAttribute('d', 'M82 92 Q120 60 158 92 Q150 78 130 73 Q110 70 95 75 Q86 82 82 92 Z');
+    hairTop.setAttribute('fill', '#2d2418');
+    bodyEl.setAttribute('fill', '#90cdf4');
+  } else {
+    hairBack.style.display = 'none';
+    hairTop.setAttribute('d', 'M78 92 Q120 55 162 92 Q150 75 130 70 Q110 65 90 72 Q82 78 78 92 Z');
+    hairTop.setAttribute('fill', '#5b3b1f');
+    bodyEl.setAttribute('fill', '#a5b4fc');
+  }
+
+  /* BMI calculation */
+  const h = parseFloat(document.getElementById('height').value);
+  const w = parseFloat(document.getElementById('weight').value);
+  const dob = document.getElementById('birthday').value;
+  const age = calcAge(dob);
+  const z   = dob ? getZodiac(dob) : null;
+  const act = parseFloat(document.getElementById('activity').value);
+  const goal = document.getElementById('goal').value;
+
+  /* BMI tile */
+  const tBmi = document.getElementById('t-bmi');
+  if (h>=100 && w>=20) {
+    const bmi = +(w/((h/100)**2)).toFixed(1);
+    setText('ls-bmi', bmi);
+    let lbl='', cls='', mouthD='', bodyScaleX=1, bodyColor='';
+    if (bmi<18.5)      { lbl='น้ำหนักน้อย'; cls='bmi-low';  bodyScaleX=.78; mouthD='M108 128 Q120 128 132 128'; }
+    else if (bmi<23)   { lbl='สมส่วน ✓';   cls='bmi-ok';   bodyScaleX=1;   mouthD='M105 124 Q120 138 135 124'; }
+    else if (bmi<25)   { lbl='เกินเล็กน้อย';cls='bmi-warn'; bodyScaleX=1.15;mouthD='M108 126 Q120 132 132 126'; }
+    else               { lbl='น้ำหนักเกิน'; cls='bmi-high'; bodyScaleX=1.3; mouthD='M108 128 Q120 130 132 128'; }
+    setText('ls-bmi-sub', lbl);
+    document.getElementById('ls-bmi').className = 'st-val ' + cls;
+    tBmi.classList.add('active');
+    /* Adjust character body proportion */
+    bodyEl.setAttribute('rx', 38 * bodyScaleX);
+    document.getElementById('mouthPath').setAttribute('d', mouthD);
+  } else {
+    setText('ls-bmi', '—'); setText('ls-bmi-sub', 'รอข้อมูล');
+    document.getElementById('ls-bmi').className = 'st-val';
+    tBmi.classList.remove('active');
+    bodyEl.setAttribute('rx', 38);
+    document.getElementById('mouthPath').setAttribute('d', 'M108 126 Q120 134 132 126');
+  }
+
+  /* TDEE */
+  const tTdee = document.getElementById('t-tdee');
+  if (h>=100 && w>=20 && gender && act && age) {
+    const bmr = gender==='ชาย' ? 10*w+6.25*h-5*age+5 : 10*w+6.25*h-5*age-161;
+    const tdee = Math.round(bmr*act);
+    let target = tdee;
+    if (goal==='lose') target = Math.max(tdee-500, gender==='ชาย'?1500:1200);
+    if (goal==='gain') target = tdee+300;
+    setText('ls-tdee', target.toLocaleString());
+    tTdee.classList.add('active');
+  } else {
+    setText('ls-tdee','—'); tTdee.classList.remove('active');
+  }
+
+  /* Water */
+  const tWater = document.getElementById('t-water');
+  if (w>=20) {
+    const water = +(w*0.033).toFixed(1);
+    const glasses = Math.round(water*1000/250);
+    setText('ls-water', water);
+    setText('ls-water-sub', `≈ ${glasses} แก้ว`);
+    tWater.classList.add('active');
+  } else {
+    setText('ls-water','—'); setText('ls-water-sub','ลิตร'); tWater.classList.remove('active');
+  }
+
+  /* Sleep */
+  const tSleep = document.getElementById('t-sleep');
+  if (age!=null) {
+    setText('ls-sleep', sleepRec(age));
+    tSleep.classList.add('active');
+  } else {
+    setText('ls-sleep','—'); tSleep.classList.remove('active');
+  }
+
+  /* Age */
+  const tAge = document.getElementById('t-age');
+  if (age!=null) {
+    setText('ls-age', age);
+    setText('ls-age-sub', `เกิด ${new Date(dob).getFullYear()+543}`);
+    tAge.classList.add('active');
+  } else {
+    setText('ls-age','—'); setText('ls-age-sub','ปี'); tAge.classList.remove('active');
+  }
+
+  /* Zodiac */
+  const tZod = document.getElementById('t-zodiac');
+  if (z) {
+    setText('ls-zodiac', `${z.icon} ${z.name}`);
+    setText('ls-zodiac-sub', THAI_ZOD[(new Date(dob).getFullYear()-4)%12]);
+    tZod.classList.add('active');
+  } else {
+    setText('ls-zodiac','—'); setText('ls-zodiac-sub','รอวันเกิด'); tZod.classList.remove('active');
+  }
+
+  /* Protein */
+  const tProt = document.getElementById('t-protein');
+  if (w>=20 && goal) {
+    const p = Math.round(goal==='gain'?w*2:goal==='lose'?w*1.8:w*1.5);
+    setText('ls-protein', p);
+    tProt.classList.add('active');
+  } else {
+    setText('ls-protein','—'); tProt.classList.remove('active');
+  }
+
+  /* Ideal weight */
+  const tIdeal = document.getElementById('t-ideal');
+  if (h>=100) {
+    const minI=+(18.5*(h/100)**2).toFixed(1), maxI=+(22.9*(h/100)**2).toFixed(1);
+    setText('ls-ideal', `${minI}–${maxI}`);
+    if (w>=20) {
+      const diff = w>maxI?+(w-maxI).toFixed(1):w<minI?+(minI-w).toFixed(1):0;
+      const dir = w>maxI?'ลด':w<minI?'เพิ่ม':'';
+      setText('ls-ideal-sub', diff?`ควร${dir} ${diff} กก.`:'อยู่ในเกณฑ์ ✓');
+    } else {
+      setText('ls-ideal-sub','กก.');
+    }
+    tIdeal.classList.add('active');
+  } else {
+    setText('ls-ideal','—'); setText('ls-ideal-sub','กก.'); tIdeal.classList.remove('active');
+  }
+
+  /* Wave when complete */
+  const arm = document.getElementById('rightArm');
+  if (completed === total) {
+    arm.classList.add('anim-wave');
+  } else {
+    arm.classList.remove('anim-wave');
+  }
+}
+
+/* Initial */
+updateLivePreview();
+
+/* ─── Validation ─────────────────────────────────────── */
+const FIELDS = [
+  {id:'name',    err:'e-name',    test:v=>v.trim()!==''},
+  {id:'email',   err:'e-email',   test:v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())},
+  {id:'phone',   err:'e-phone',   test:v=>{const d=v.replace(/\D/g,'');return d.length>=9&&d.length<=10;}},
+  {id:'gender',  err:'e-gender',  test:v=>v!==''},
+  {id:'blood',   err:'e-blood',   test:v=>v!==''},
+  {id:'birthday',err:'e-birthday',test:v=>v!==''},
+  {id:'height',  err:'e-height',  test:v=>parseFloat(v)>=100&&parseFloat(v)<=250},
+  {id:'weight',  err:'e-weight',  test:v=>parseFloat(v)>=20&&parseFloat(v)<=300},
+  {id:'activity',err:'e-activity',test:v=>v!==''},
+  {id:'goal',    err:'e-goal',    test:v=>v!==''},
+  {id:'diet',    err:'e-diet',    test:v=>v!==''},
+];
+function validate() {
+  let ok=true;
+  FIELDS.forEach(({id,err,test})=>{
+    const el=document.getElementById(id),em=document.getElementById(err);
+    if(!test(el.value)){el.classList.add('err');em.classList.add('show');ok=false;}
+    else{el.classList.remove('err');em.classList.remove('show');}
+  });
+  return ok;
+}
+
+/* ─── Submit ─────────────────────────────────────────── */
+document.getElementById('surveyForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  if(!validate()) return;
+
+  const g = id=>document.getElementById(id).value;
+  const h = parseFloat(g('height')), w = parseFloat(g('weight'));
+  const gender = g('gender'), dob = g('birthday'), blood = g('blood');
+  const act = parseFloat(g('activity')), goal = g('goal'), diet = g('diet');
+  const age = calcAge(dob);
+  const zodiac = getZodiac(dob);
+  const thaiZ = THAI_ZOD[(new Date(dob).getFullYear()-4)%12];
+  const bmr = gender==='ชาย' ? 10*w+6.25*h-5*age+5 : 10*w+6.25*h-5*age-161;
+  const tdee = Math.round(bmr*act);
+  const bmi = +(w/((h/100)**2)).toFixed(1);
+  const protein = Math.round(goal==='gain'?w*2:goal==='lose'?w*1.8:w*1.5);
+  const water = +(w*0.033).toFixed(1);
+  const glasses = Math.round(water*1000/250);
+  const targetKcal = goal==='lose' ? Math.max(tdee-500, gender==='ชาย'?1500:1200)
+                   : goal==='gain' ? tdee+300 : tdee;
+  const macros = goal==='lose' ? {carb:40,prot:35,fat:25}
+               : goal==='gain' ? {carb:50,prot:30,fat:20}
+               : {carb:50,prot:25,fat:25};
+  const bmiInfo = bmi<18.5?{lbl:'น้ำหนักน้อย',cls:'b'}:bmi<23?{lbl:'สมส่วน ✓',cls:'g'}:bmi<25?{lbl:'เกินเล็กน้อย',cls:'o'}:{lbl:'น้ำหนักเกิน',cls:'r'};
+  const idealMin = +(18.5*(h/100)**2).toFixed(1), idealMax = +(22.9*(h/100)**2).toFixed(1);
+  const diffToIdeal = w>idealMax?+(w-idealMax).toFixed(1):w<idealMin?+(idealMin-w).toFixed(1):0;
+  const diffDir = w>idealMax?'ควรลด':w<idealMin?'ควรเพิ่ม':'';
+  const exLevel = act<=1.375?'low':'high';
+  const exPlan = EXERCISE[goal]?.[exLevel] || EXERCISE.maintain.low;
+  const bd = BLOOD[blood];
+  const filterEat = foods => diet==='vegan'?foods.filter(f=>!['นม','ไข่','เนื้อ','ปลา','ไก่','หอย','กุ้ง'].some(k=>f.includes(k))):
+    diet==='veggie'?foods.filter(f=>!['เนื้อ','ปลา','ไก่','หอย','กุ้ง'].some(k=>f.includes(k))):
+    diet==='je'?foods.filter(f=>!['เนื้อ','ปลา','ไก่','หอย','กุ้ง','กระเทียม','หัวหอม'].some(k=>f.includes(k))):
+    foods;
+  const eatFiltered = [...new Set([...filterEat(bd.eat), ...filterEat(zodiac.foods)])];
+  const pSources = PROTEIN_BY_DIET[diet]?.[goal] || PROTEIN_BY_DIET.normal.maintain;
+  const pMeal1 = pSources[0]||'โปรตีน', pMeal2 = pSources[1]||'โปรตีน';
+
+  /* Save */
+  const list = JSON.parse(localStorage.getItem('registrations')||'[]');
+  list.push({
+    id:Date.now(), name:g('name').trim(), email:g('email').trim(), phone:g('phone').trim(),
+    gender, blood, birthday:dob, age, height:h, weight:w, bmi, tdee, targetKcal,
+    goal, diet, date:new Date().toLocaleString('th-TH')
+  });
+  localStorage.setItem('registrations',JSON.stringify(list));
+
+  /* Render */
+  setText('r-name', `สวัสดี, ${g('name').trim()} 👋`);
+  setText('r-sub', `กลุ่มเลือด ${blood} · อายุ ${age} ปี · ${DIET_LABELS[diet]}`);
+  document.getElementById('r-chips').innerHTML =
+    `<span class="chip">ราศี${zodiac.name} ${zodiac.icon}</span>`+
+    `<span class="chip">ปี${thaiZ}</span>`+
+    `<span class="chip">${GOAL_LABELS[goal]}</span>`;
+
+  const mc = [
+    {lbl:'BMI',val:bmi,sub:bmiInfo.lbl,cls:bmiInfo.cls},
+    {lbl:'TDEE',val:tdee.toLocaleString(),sub:'kcal/วัน',cls:'o'},
+    {lbl:'เป้าหมาย',val:targetKcal.toLocaleString(),sub:'kcal/วัน',cls:goal==='lose'?'r':goal==='gain'?'g':''},
+    {lbl:'โปรตีน',val:protein,sub:'กรัม/วัน',cls:'p'},
+    {lbl:'น้ำ/วัน',val:water,sub:`${glasses} แก้ว`,cls:'b'},
+    {lbl:'น้ำหนักเป้า',val:`${idealMin}–${idealMax}`,sub:`กก. (${diffDir}${diffToIdeal?diffToIdeal+'กก.':' perfect!'})`,cls:diffToIdeal?'':'g'},
+    {lbl:'ส่วนสูง',val:`${h}ซม.`,sub:`น้ำหนัก ${w}กก.`,cls:''},
+    {lbl:'ราศี',val:`${zodiac.icon}${zodiac.name}`,sub:thaiZ,cls:'p'},
+  ];
+  document.getElementById('r-metrics').innerHTML = mc.map(m=>`<div class="metric ${m.cls}"><div class="metric-lbl">${m.lbl}</div><div class="metric-val">${m.val}</div><div class="metric-sub">${m.sub}</div></div>`).join('');
+
+  document.getElementById('r-ws').innerHTML = `
+    <div class="ws-card"><div class="ws-icon">💧</div><div class="ws-val">${water} L</div><div class="ws-lbl">น้ำ/วัน (${glasses} แก้ว)</div></div>
+    <div class="ws-card"><div class="ws-icon">😴</div><div class="ws-val">${sleepRec(age)} ชม.</div><div class="ws-lbl">การนอน/คืน</div></div>`;
+
+  const goalNote = goal==='lose'
+    ? `ลดจาก TDEE ${tdee.toLocaleString()} → เป้า ${targetKcal.toLocaleString()} kcal (ขาดดุล ${tdee-targetKcal} kcal/วัน ≈ ลด ~0.5 กก./สัปดาห์)`
+    : goal==='gain'
+    ? `เพิ่มจาก TDEE ${tdee.toLocaleString()} → เป้า ${targetKcal.toLocaleString()} kcal (เกินดุล ${targetKcal-tdee} kcal/วัน ≈ เพิ่ม ~0.3 กก./สัปดาห์)`
+    : `รักษา TDEE ${tdee.toLocaleString()} kcal/วัน`;
+  document.getElementById('r-goal').innerHTML = `
+    <div class="sec-title">🎯 เป้าหมาย: ${GOAL_LABELS[goal]}</div>
+    <p class="sec-note">${goalNote}</p>
+    ${diffToIdeal?`<p class="sec-note" style="margin-top:4px;">⚖️ น้ำหนักอุดมคติ ${idealMin}–${idealMax} กก. (${diffDir} ${diffToIdeal} กก.)</p>`:'<p class="sec-note" style="margin-top:4px;color:#38a169;">✅ น้ำหนักอยู่ในช่วงอุดมคติแล้ว!</p>'}`;
+
+  const carbG = Math.round(targetKcal*macros.carb/100/4);
+  const protG = Math.round(targetKcal*macros.prot/100/4);
+  const fatG  = Math.round(targetKcal*macros.fat/100/9);
+  document.getElementById('r-macro').innerHTML = `
+    <div class="sec-title">📊 สัดส่วนสารอาหาร (${targetKcal.toLocaleString()} kcal)</div>
+    ${macroBar('คาร์โบไฮเดรต',macros.carb,carbG+'g','#667eea')}
+    ${macroBar('โปรตีน',macros.prot,protG+'g','#48bb78')}
+    ${macroBar('ไขมัน',macros.fat,fatG+'g','#f6ad55')}`;
+
+  document.getElementById('r-exercise').innerHTML = `
+    <div class="sec-title">🏃 แผนออกกำลังกายรายสัปดาห์ (${GOAL_LABELS[goal]})</div>
+    <div class="week-grid">${exPlan.map(d=>`<div class="day-card ${d.t.includes('พัก')?'rest':'active'}"><div class="day-name">${d.d}</div><div class="day-act">${d.t.replace('\n','<br>')}</div></div>`).join('')}</div>`;
+
+  document.getElementById('r-blood').innerHTML = `
+    <div class="sec-title">🩸 กลุ่มเลือด ${blood} — อาหารแนะนำ</div>
+    <div class="chips">${filterEat(bd.eat).map(f=>chip(f)).join('')}</div>
+    <div style="font-size:12px;color:#666;margin:8px 0 5px;">ควรหลีกเลี่ยง</div>
+    <div class="chips">${bd.avoid.map(f=>chip(f,'red')).join('')}</div>
+    <p class="sec-note">💡 ${bd.note}</p>`;
+
+  document.getElementById('r-zodiac').innerHTML = `
+    <div class="sec-title">${zodiac.icon} ราศี${zodiac.name} — ${zodiac.note}</div>
+    <div class="chips">${filterEat(zodiac.foods).map(f=>chip(f,'purple')).join('')}</div>`;
+
+  const M = Math.round;
+  document.getElementById('r-menu').innerHTML = `
+    <div class="sec-title">🍽️ ตัวอย่างเมนูรายวัน (${DIET_LABELS[diet]})</div>
+    <div class="menu-meal">
+      <div class="meal-title">🌅 เช้า (~${M(targetKcal*.25).toLocaleString()} kcal)</div>
+      <div class="chips">${chip(eatFiltered[0]||'ผลไม้สด','green')} ${chip(diet==='vegan'||diet==='je'?'โจ๊กข้าวกล้อง':'โจ๊กหมู/ไก่','green')} ${chip(diet==='vegan'?'นมถั่วเหลือง':'ไข่ต้ม','green')}</div>
+    </div>
+    <div class="menu-meal">
+      <div class="meal-title">☀️ กลางวัน (~${M(targetKcal*.35).toLocaleString()} kcal)</div>
+      <div class="chips">${chip('ข้าวกล้อง','green')} ${chip(pMeal1,'green')} ${chip(eatFiltered[1]||'ผักสด','green')} ${chip(zodiac.foods[0],'green')}</div>
+    </div>
+    <div class="menu-meal">
+      <div class="meal-title">🌙 เย็น (~${M(targetKcal*.3).toLocaleString()} kcal)</div>
+      <div class="chips">${chip(pMeal2,'green')} ${chip(eatFiltered[2]||'ผักลวก','green')} ${chip(zodiac.foods[1]||'ผลไม้','green')} ${chip('ซุปใส','green')}</div>
+    </div>
+    <div class="menu-meal">
+      <div class="meal-title">🍎 ของว่าง (~${M(targetKcal*.1).toLocaleString()} kcal)</div>
+      <div class="chips">${chip(zodiac.foods[2]||'ผลไม้','orange')} ${chip(diet==='vegan'?'นมถั่วเหลือง':'โยเกิร์ต','orange')} ${chip('ถั่วอบ','orange')}</div>
+    </div>`;
+
+  document.getElementById('mainGrid').style.display = 'none';
+  document.getElementById('resultBox').style.display = 'block';
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+function macroBar(lbl,pct,g,color){
+  return `<div class="macro-bar">
+    <div class="macro-bar-top"><span>${lbl} (${pct}%)</span><span style="color:${color};font-weight:700;">${g}</span></div>
+    <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};"></div></div>
+  </div>`;
+}
+
+function resetForm(){
+  document.getElementById('surveyForm').reset();
+  document.getElementById('mainGrid').style.display = 'grid';
+  document.getElementById('resultBox').style.display = 'none';
+  FIELDS.forEach(({id,err})=>{
+    document.getElementById(id).classList.remove('err');
+    document.getElementById(err).classList.remove('show');
+  });
+  updateLivePreview();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

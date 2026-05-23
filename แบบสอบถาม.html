@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แบบสอบถาม</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 480px;
+    }
+    .card-header { text-align: center; margin-bottom: 36px; }
+    .card-header .icon { font-size: 48px; margin-bottom: 12px; }
+    .card-header h1 { font-size: 24px; color: #2d2d2d; font-weight: 700; }
+    .card-header p { color: #888; font-size: 14px; margin-top: 6px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 8px; }
+    label .required { color: #e53e3e; margin-left: 3px; }
+    input {
+      width: 100%; padding: 12px 16px;
+      border: 2px solid #e2e8f0; border-radius: 10px;
+      font-size: 15px; color: #2d2d2d;
+      transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+    }
+    input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+    input::placeholder { color: #bbb; }
+    input.error { border-color: #e53e3e; }
+    .error-msg { color: #e53e3e; font-size: 12px; margin-top: 5px; display: none; }
+    .error-msg.show { display: block; }
+    button[type="submit"] {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    button[type="submit"]:hover { opacity: 0.92; }
+    button[type="submit"]:active { transform: scale(0.98); }
+    .success-box { display: none; text-align: center; padding: 32px 0 8px; }
+    .success-box .checkmark { font-size: 56px; }
+    .success-box h2 { color: #2d2d2d; font-size: 22px; margin: 12px 0 8px; }
+    .success-box p { color: #666; font-size: 14px; }
+    .btn-row { display: flex; gap: 12px; margin-top: 20px; justify-content: center; }
+    .reset-btn {
+      background: none; border: 2px solid #667eea; color: #667eea;
+      border-radius: 10px; padding: 10px 24px; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s, color 0.2s;
+    }
+    .reset-btn:hover { background: #667eea; color: #fff; }
+    .admin-link {
+      background: #667eea; border: none; color: #fff;
+      border-radius: 10px; padding: 10px 24px; font-size: 14px; font-weight: 600;
+      cursor: pointer; text-decoration: none; display: inline-block;
+      transition: opacity 0.2s;
+    }
+    .admin-link:hover { opacity: 0.85; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <div class="icon">📋</div>
+      <h1>แบบสอบถาม</h1>
+      <p>กรุณากรอกข้อมูลให้ครบถ้วน</p>
+    </div>
+
+    <form id="surveyForm" novalidate>
+      <div class="form-group">
+        <label for="name">ชื่อ-นามสกุล <span class="required">*</span></label>
+        <input type="text" id="name" placeholder="เช่น สมชาย ใจดี" />
+        <div class="error-msg" id="nameErr">กรุณากรอกชื่อ-นามสกุล</div>
+      </div>
+      <div class="form-group">
+        <label for="email">อีเมล <span class="required">*</span></label>
+        <input type="email" id="email" placeholder="เช่น somchai@email.com" />
+        <div class="error-msg" id="emailErr">กรุณากรอกอีเมลให้ถูกต้อง</div>
+      </div>
+      <div class="form-group">
+        <label for="phone">เบอร์โทรศัพท์ <span class="required">*</span></label>
+        <input type="tel" id="phone" placeholder="เช่น 081-234-5678" maxlength="15" />
+        <div class="error-msg" id="phoneErr">กรุณากรอกเบอร์โทรให้ถูกต้อง (9-10 หลัก)</div>
+      </div>
+      <button type="submit">ส่งแบบสอบถาม</button>
+    </form>
+
+    <div class="success-box" id="successBox">
+      <div class="checkmark">✅</div>
+      <h2>ส่งข้อมูลสำเร็จ!</h2>
+      <p>ขอบคุณที่กรอกแบบสอบถาม</p>
+      <div class="btn-row">
+        <button class="reset-btn" onclick="resetForm()">กรอกใหม่</button>
+        <a class="admin-link" href="admin.html">ดูรายชื่อ</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('surveyForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (validate()) saveAndShow();
+    });
+
+    function validate() {
+      let ok = true;
+      const name = document.getElementById('name');
+      const nameErr = document.getElementById('nameErr');
+      if (!name.value.trim()) {
+        name.classList.add('error'); nameErr.classList.add('show'); ok = false;
+      } else { name.classList.remove('error'); nameErr.classList.remove('show'); }
+
+      const email = document.getElementById('email');
+      const emailErr = document.getElementById('emailErr');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+        email.classList.add('error'); emailErr.classList.add('show'); ok = false;
+      } else { email.classList.remove('error'); emailErr.classList.remove('show'); }
+
+      const phone = document.getElementById('phone');
+      const phoneErr = document.getElementById('phoneErr');
+      const digits = phone.value.replace(/\D/g, '');
+      if (digits.length < 9 || digits.length > 10) {
+        phone.classList.add('error'); phoneErr.classList.add('show'); ok = false;
+      } else { phone.classList.remove('error'); phoneErr.classList.remove('show'); }
+
+      return ok;
+    }
+
+    function saveAndShow() {
+      const list = JSON.parse(localStorage.getItem('registrations') || '[]');
+      list.push({
+        id: Date.now(),
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        date: new Date().toLocaleString('th-TH')
+      });
+      localStorage.setItem('registrations', JSON.stringify(list));
+      document.getElementById('surveyForm').style.display = 'none';
+      document.getElementById('successBox').style.display = 'block';
+    }
+
+    function resetForm() {
+      document.getElementById('surveyForm').reset();
+      document.getElementById('surveyForm').style.display = 'block';
+      document.getElementById('successBox').style.display = 'none';
+      ['name','email','phone'].forEach(id => document.getElementById(id).classList.remove('error'));
+      ['nameErr','emailErr','phoneErr'].forEach(id => document.getElementById(id).classList.remove('show'));
+    }
+  </script>
+</body>
+</html>
