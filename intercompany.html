@@ -2745,6 +2745,27 @@ function renderMatching(){
     plSummary.push({coA:e.coA,coB:e.coB,totalRev:e.revSum,totalExp:e.expSum,diff,status:diff<0.01?'matched':'unmatched'});
   });
 
+  // ── BU Mismatch Detection ──
+  // กลุ่มรายการตาม (seller, buyer, grp) แล้วเช็คว่า unmatched แต่ยอดรวมในกลุ่มเท่ากัน = BU ต่างกัน
+  const buHintMap=new Map();
+  plPairs.forEach(p=>{
+    const key=`${p.seller}|${p.buyer}|${p.grp}`;
+    if(!buHintMap.has(key))buHintMap.set(key,{seller:p.seller,buyer:p.buyer,grp:p.grp,totalA:0,totalB:0,rows:[]});
+    const e=buHintMap.get(key);
+    e.totalA+=p.aAmt; e.totalB+=p.bAmt; e.rows.push(p);
+  });
+  const buHints=[];
+  const buHintKeys=new Set(); // key = seller|buyer|grp ที่สงสัย BU mismatch
+  buHintMap.forEach((e,key)=>{
+    const totalDiff=Math.abs(e.totalA-e.totalB);
+    const hasUnmatched=e.rows.some(r=>r.status==='unmatched');
+    // เงื่อนไข BU Mismatch: มี unmatched แต่ยอดรวมทั้งกลุ่มเท่ากัน และมีมากกว่า 1 row
+    if(hasUnmatched && totalDiff<0.01 && e.totalA>0 && e.rows.length>1){
+      buHints.push(e);
+      e.rows.forEach(r=>buHintKeys.add(`${r.seller}|${r.buyer}|${r.grp}|${r.label}`));
+    }
+  });
+
   const plMatched=plPairs.filter(p=>p.status==='matched').length;
   const plUnmatched=plPairs.filter(p=>p.status==='unmatched').length;
   const bsMatched=bsPairs.filter(p=>p.status==='matched').length;
@@ -2754,6 +2775,7 @@ function renderMatching(){
   document.getElementById('matching-kpi').innerHTML=`
     <div class="kpi" style="border-top:3px solid #276749"><div class="kpi-lbl">PL Matched</div><div class="kpi-val" style="color:#276749">${plMatched}</div><div class="kpi-sub">รายการ PL ตรงกัน</div></div>
     <div class="kpi" style="border-top:3px solid #e53e3e"><div class="kpi-lbl">PL Unmatched</div><div class="kpi-val" style="color:#e53e3e">${plUnmatched}</div><div class="kpi-sub">รายการ PL ไม่ตรง</div></div>
+    <div class="kpi" style="border-top:3px solid #f6ad55"><div class="kpi-lbl">⚠️ BU Mismatch?</div><div class="kpi-val" style="color:#c05621">${buHints.length}</div><div class="kpi-sub">สงสัย BU ต่างกัน</div></div>
     <div class="kpi" style="border-top:3px solid #553c9a"><div class="kpi-lbl">BS Matched</div><div class="kpi-val" style="color:#553c9a">${bsMatched}</div><div class="kpi-sub">รายการ BS ตรงกัน</div></div>
     <div class="kpi" style="border-top:3px solid #e53e3e"><div class="kpi-lbl">BS Unmatched</div><div class="kpi-val" style="color:#e53e3e">${bsUnmatched}</div><div class="kpi-sub">รายการ BS ไม่ตรง</div></div>
     <div class="kpi" style="border-top:3px solid #C0392B"><div class="kpi-lbl">Total Eliminated</div><div class="kpi-val">${fmtNum(totalElim)}</div><div class="kpi-sub">บาท</div></div>`;
@@ -2792,6 +2814,8 @@ function renderMatching(){
             🏢 ${sn(coA)} ↔ ${sn(coB)}
           </td></tr>`;
         }
+        const isBuHint=buHintKeys.has(`${p.seller}|${p.buyer}|${p.grp}|${p.label}`);
+        const buBadge=isBuHint?`<span class="badge" style="background:#feebc8;color:#c05621;margin-left:4px">⚠️ BU?</span>`:'';
         rows+=`<tr class="${rowCls(p.status)}">
           <td style="white-space:nowrap;padding-left:18px!important">${sn(p.seller)} →</td>
           <td style="white-space:nowrap">${sn(p.buyer)}</td>
@@ -2799,7 +2823,7 @@ function renderMatching(){
           <td class="num">${fmtNum(p.aAmt)}</td>
           <td class="num">${fmtNum(p.bAmt)}</td>
           <td class="num ${p.diff?'diff-text':''}">${p.diff?fmtNum(p.diff):'-'}</td>
-          <td><span class="badge ${bCls(p.status)}">${bLbl(p.status)}</span></td>
+          <td><span class="badge ${bCls(p.status)}">${bLbl(p.status)}</span>${buBadge}</td>
         </tr>`;
       });
     } else {
@@ -2884,6 +2908,56 @@ function renderMatching(){
     </div>
   </div>`;
 
+  // ── BU Mismatch Hint Section ──
+  let buHintHtml='';
+  if(buHints.length){
+    const grpLabel={sale:'📦 SALE vs PURCHASE',mold:'🔧 MOLD',fa:'🏭 FIXED ASSET',rental:'🏠 RENTAL',svc:'⚙️ SERVICE',royalty:'📜 ROYALTY',interest:'💰 INTEREST',mgmt:'💼 MGMT FEE',div:'💵 DIVIDEND',other_pl:'📂 OTHER'};
+    const sn2=co=>getCoName(co).replace('Co., Ltd.','').replace('Co.Ltd.','').trim();
+    let hintRows='';
+    buHints.forEach(h=>{
+      const buBreakdown=h.rows.map(r=>`
+        <tr style="font-size:11px">
+          <td style="padding:3px 10px 3px 24px;color:#718096">${r.label}</td>
+          <td class="num" style="padding:3px 10px;color:${r.aAmt?'#2d3748':'#cbd5e0'}">${r.aAmt?fmtNum(r.aAmt):'—'}</td>
+          <td class="num" style="padding:3px 10px;color:${r.bAmt?'#2d3748':'#cbd5e0'}">${r.bAmt?fmtNum(r.bAmt):'—'}</td>
+          <td style="padding:3px 10px"><span class="badge ${r.status==='matched'?'b-matched':'b-unmatched'}" style="font-size:10px">${r.status==='matched'?'✓':'✗'}</span></td>
+        </tr>`).join('');
+      hintRows+=`
+        <tr style="background:#fefce8;border-top:2px solid #f6ad55">
+          <td style="padding:7px 10px;font-weight:700;font-size:12px;color:#744210">
+            ⚠️ ${sn2(h.seller)} → ${sn2(h.buyer)}
+          </td>
+          <td style="padding:7px 10px;font-size:12px;color:#744210">${grpLabel[h.grp]||h.grp}</td>
+          <td class="num" style="padding:7px 10px;font-weight:700;color:#276749">${fmtNum(h.totalA)}</td>
+          <td class="num" style="padding:7px 10px;font-weight:700;color:#276749">${fmtNum(h.totalB)}</td>
+          <td style="padding:7px 10px"><span class="badge" style="background:#feebc8;color:#c05621;font-size:11px">ยอดรวมตรงกัน แต่ BU ต่างกัน</span></td>
+        </tr>
+        ${buBreakdown}`;
+    });
+    buHintHtml=`<div class="msec-wrap" style="margin-bottom:10px">
+      <div class="msec-hdr" style="background:#c05621" onclick="toggleMatchSec('bu-hint')">
+        <span>⚠️ BU MISMATCH SUSPECTS — ยอดรวมตรง แต่บันทึก BU ต่างกัน (${buHints.length} กลุ่ม)</span>
+        <span id="msec-arr-bu-hint">▼</span>
+      </div>
+      <div class="msec-body" id="msec-body-bu-hint">
+        <div style="padding:10px 14px;background:#fffbeb;border-bottom:1px solid #fde68a;font-size:12px;color:#92400e;line-height:1.6">
+          💡 <strong>รายการเหล่านี้ Unmatched เพราะบันทึก BU (Product) ต่างกัน</strong> แต่ยอดรวมในกลุ่มเดียวกันเท่ากัน<br>
+          &nbsp;&nbsp;&nbsp;เช่น บริษัท A บันทึกใน <em>Plastic</em> แต่บริษัท B บันทึกใน <em>Melamine</em> — ควรแก้ไขให้ตรงกัน
+        </div>
+        <div class="rt-wrap" style="margin-top:0">
+          <table class="rt">
+            <thead><tr>
+              <th style="text-align:left">Seller → Buyer</th>
+              <th style="text-align:left">ประเภทรายการ</th>
+              <th>รวม Seller</th><th>รวม Buyer</th><th>หมายเหตุ</th>
+            </tr></thead>
+            <tbody>${hintRows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+  }
+
   // ── PL detail groups ──
   const plHtml=PL_GRP_ORDER.map(grpId=>mkGrpSection(grpId,plPairs.filter(p=>p.grp===grpId),'pl')).join('');
 
@@ -2895,7 +2969,7 @@ function renderMatching(){
   // ── BS groups ──
   const bsHtml=BS_GRP_ORDER.map(grpId=>mkGrpSection(grpId,bsPairs.filter(p=>p.grp===grpId),'bs')).join('');
 
-  document.getElementById('matching-content').innerHTML=plSumHtml+plHtml+bsDivider+bsHtml;
+  document.getElementById('matching-content').innerHTML=plSumHtml+buHintHtml+plHtml+bsDivider+bsHtml;
 }
 
 function toggleMatchSec(id){
