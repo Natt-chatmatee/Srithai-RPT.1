@@ -93,6 +93,23 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#f0f4f8;color:#2d
 .b-reviewed{background:#fefcbf;color:#744210}.b-approved{background:#c6f6d5;color:#276749}.b-danger{background:#fed7d7;color:#742a2a}
 .b-matched{background:#c6f6d5;color:#276749}.b-unmatched{background:#fed7d7;color:#c53030}
 .b-pending{background:#feebc8;color:#c05621}
+/* Matching page */
+.match-co-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;margin-bottom:4px}
+.match-co-chip{border:1.5px solid #e2e8f0;border-radius:8px;padding:6px 10px;cursor:pointer;display:flex;align-items:center;gap:7px;font-size:11px;color:#4a5568;transition:all .2s;user-select:none}
+.match-co-chip:hover{border-color:#C0392B;background:#fff5f5}.match-co-chip.sel{border-color:#C0392B;background:#fff5f5;color:#7B0D0D;font-weight:600}
+.match-co-chk{width:16px;height:16px;border:2px solid currentColor;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px}
+.msec-wrap{margin-bottom:10px;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.09)}
+.msec-hdr{padding:8px 14px;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;justify-content:space-between;letter-spacing:.4px;user-select:none}
+.msec-hdr.pl-hdr{} .msec-hdr.bs-hdr{border-left:4px solid #a78bfa}
+.msec-body{background:white}
+.sub-detail-row{background:#f8fafc;border-top:1px dashed #e2e8f0}
+.sub-detail-row td{padding:4px 8px!important;font-size:12px}
+.match-row-matched td{background:#f0fff4!important}
+.match-row-unmatched td{background:#fff5f5!important}
+.diff-text{color:#e53e3e;font-weight:700}
+.btn-grp-act{background:#C0392B!important;color:white!important;border-color:#C0392B!important}
+.cost-neg{color:#e53e3e}
+.rs-hdr td{background:#f8f9fa!important;font-weight:700!important;color:#4a5568!important;font-size:11px!important;text-transform:uppercase!important;letter-spacing:.5px!important;padding:5px 11px!important}
 /* Alerts */
 .alert{padding:11px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:flex;align-items:flex-start;gap:9px}
 .al-info{background:#ebf8ff;border-left:4px solid #4299e1;color:#2c5282}
@@ -138,7 +155,7 @@ body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#f0f4f8;color:#2d
 hr.sep{border:none;border-top:1px solid #e2e8f0;margin:16px 0}
 /* Util */
 .num{text-align:right;font-variant-numeric:tabular-nums}
-.zero{color:#cbd5e0}
+.zero{color:#cbd5e0}.num-pos{text-align:right;color:#2d3748}
 .flex{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .ml-auto{margin-left:auto}
 /* Multi-currency */
@@ -370,18 +387,27 @@ hr.sep{border:none;border-top:1px solid #e2e8f0;margin:16px 0}
 <!-- ===================== PAGE: REPORT ===================== -->
 <div id="pg-report" class="page">
   <div class="card">
-    <div class="card-hdr">
+    <div class="card-hdr" style="flex-wrap:wrap;gap:10px">
       <div><div class="card-title">รายงานสรุปรายบริษัท (Summary Report)</div></div>
-      <div class="flex">
-        <select id="rpt-company" class="fc" style="width:260px;font-size:13px" onchange="renderReport()"><option value="">-- เลือกบริษัท --</option></select>
-        <select id="rpt-year" class="fc" style="width:110px;font-size:13px" onchange="renderReport()"><option value="">ทุกปี</option></select>
-        <select id="rpt-quarter" class="fc" style="width:110px;font-size:13px" onchange="renderReport()"><option value="">ทุกไตรมาส</option><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select>
-        <button class="btn btn-ghost btn-sm no-print" onclick="exportExcel('rpt-table','Summary_Report')">📥 Excel</button>
+      <div class="flex" style="flex-wrap:wrap;gap:6px">
+        <select id="rpt-company" class="fc" style="width:240px;font-size:13px" onchange="selectRptCo()"><option value="">-- เลือกบริษัท --</option></select>
+        <select id="rpt-year" class="fc" style="width:100px;font-size:13px" onchange="renderReport()"><option value="">ทุกปี</option></select>
+        <select id="rpt-quarter" class="fc" style="width:100px;font-size:13px" onchange="renderReport()"><option value="">ทุกไตรมาส</option><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select>
+        <button class="btn btn-ghost btn-sm no-print" onclick="exportExcel((window._rptTab==='bs'?'rpt-table-bs':'rpt-table-pl'),'Summary_Report')">📥 Excel</button>
         <button class="btn btn-ghost btn-sm no-print" onclick="window.print()">🖨️ Print</button>
       </div>
     </div>
+    <!-- Group selector chips -->
+    <div style="padding:10px 20px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.5px">ดูตามกลุ่ม:</span>
+      <button id="rpt-grp-all"     class="btn btn-ghost btn-sm"   onclick="selectRptGrp('all')">🏢 ทั้งหมด</button>
+      <button id="rpt-grp-sub"     class="btn btn-ghost btn-sm"   onclick="selectRptGrp('subsidiary')">📦 Subsidiaries</button>
+      <button id="rpt-grp-assoL"   class="btn btn-ghost btn-sm"   onclick="selectRptGrp('associateLocal')">🤝 Associates (Local)</button>
+      <button id="rpt-grp-assoF"   class="btn btn-ghost btn-sm"   onclick="selectRptGrp('associateForeign')">🌏 Associates (Foreign)</button>
+      <button id="rpt-grp-other"   class="btn btn-ghost btn-sm"   onclick="selectRptGrp('other')">🔗 Other Related</button>
+    </div>
     <div class="card-body">
-      <div id="report-content"><div class="empty"><div class="empty-icon">📊</div><div class="empty-title">เลือกบริษัทเพื่อดูรายงาน</div></div></div>
+      <div id="report-content"><div class="empty"><div class="empty-icon">📊</div><div class="empty-title">เลือกบริษัทหรือกลุ่มเพื่อดูรายงาน</div></div></div>
     </div>
   </div>
 </div>
@@ -394,7 +420,7 @@ hr.sep{border:none;border-top:1px solid #e2e8f0;margin:16px 0}
       <div class="flex">
         <select id="con-year" class="fc" style="width:110px;font-size:13px" onchange="renderConsolidation()"><option value="">ทุกปี</option></select>
         <select id="con-quarter" class="fc" style="width:110px;font-size:13px" onchange="renderConsolidation()"><option value="">ทุกไตรมาส</option><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select>
-        <button class="btn btn-ghost btn-sm no-print" onclick="exportExcel('con-table','Consolidation_Report')">📥 Excel</button>
+        <button class="btn btn-ghost btn-sm no-print" onclick="exportConExcel()">📥 Excel</button>
         <button class="btn btn-ghost btn-sm no-print" onclick="window.print()">🖨️ Print</button>
       </div>
     </div>
@@ -413,13 +439,27 @@ hr.sep{border:none;border-top:1px solid #e2e8f0;margin:16px 0}
 
 <!-- ===================== PAGE: MATCHING ===================== -->
 <div id="pg-matching" class="page">
+  <!-- Company selector card -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-hdr" style="padding:10px 16px">
+      <div><div class="card-title" style="font-size:13px">🏢 เลือกบริษัทที่ต้องการตรวจสอบ</div><div class="card-sub">เลือกบริษัทที่จะแสดงใน Matching (ไม่เลือก = แสดงทั้งหมด)</div></div>
+      <div class="flex" style="gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="selectAllMatchCos()">เลือกทั้งหมด</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearMatchCos()">ล้าง</button>
+      </div>
+    </div>
+    <div class="card-body" style="padding:14px 16px" id="match-co-body">
+      <div style="color:#a0aec0;font-size:13px;text-align:center">กรุณา Submit ข้อมูลก่อนจึงจะเลือกบริษัทได้</div>
+    </div>
+  </div>
+  <!-- Main matching card -->
   <div class="card">
     <div class="card-hdr">
-      <div><div class="card-title">Intercompany Matching & Reconciliation</div><div class="card-sub">ตรวจสอบรายการระหว่างบริษัทที่ตรง/ไม่ตรงกัน</div></div>
+      <div><div class="card-title">🔍 Intercompany Matching & Reconciliation</div><div class="card-sub">ตรวจสอบรายการระหว่างบริษัทที่ตรง/ไม่ตรงกัน แยกตามประเภทรายการ</div></div>
       <div class="flex">
         <select id="mat-year" class="fc" style="width:110px;font-size:13px" onchange="renderMatching()"><option value="">ทุกปี</option></select>
         <select id="mat-quarter" class="fc" style="width:110px;font-size:13px" onchange="renderMatching()"><option value="">ทุกไตรมาส</option><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select>
-        <button class="btn btn-ghost btn-sm no-print" onclick="exportExcel('mat-table','Matching_Report')">📥 Excel</button>
+        <button class="btn btn-ghost btn-sm no-print" onclick="window.print()">🖨️ Print</button>
       </div>
     </div>
     <div class="card-body">
@@ -431,19 +471,54 @@ hr.sep{border:none;border-top:1px solid #e2e8f0;margin:16px 0}
 
 <!-- ===================== PAGE: DASHBOARD ===================== -->
 <div id="pg-dashboard" class="page">
+
+  <!-- Header bar -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-    <div style="font-size:18px;font-weight:700;color:#1a202c">Consolidation Dashboard</div>
+    <div>
+      <div style="font-size:18px;font-weight:700;color:#1a202c">🎯 Consolidation Dashboard</div>
+      <div style="font-size:12px;color:#718096;margin-top:2px">ภาพรวมการค้าระหว่างกันในกลุ่ม Srithai</div>
+    </div>
     <div class="flex">
       <select id="dash-year" class="fc" style="width:110px;font-size:13px" onchange="renderDashboard()"><option value="">ทุกปี</option></select>
       <select id="dash-quarter" class="fc" style="width:110px;font-size:13px" onchange="renderDashboard()"><option value="">ทุกไตรมาส</option><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select>
+      <button class="btn btn-ghost btn-sm no-print" onclick="exportExcel('dash-co-tbl','Dashboard')">📥 Excel</button>
     </div>
   </div>
+
+  <!-- KPI row -->
   <div id="dash-kpi" class="kpi-grid"></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="dash-charts">
-    <div class="card"><div class="card-hdr"><div class="card-title">Revenue by Company</div></div><div class="card-body" id="dash-rev-chart"></div></div>
-    <div class="card"><div class="card-hdr"><div class="card-title">Expense by Company</div></div><div class="card-body" id="dash-exp-chart"></div></div>
+
+  <!-- Row 2: Company table (left) + Intercompany Flow (right) -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px" id="dash-mid-row">
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">🏢 สรุปรายบริษัท</div>
+        <div style="font-size:11px;color:#718096">คลิกชื่อบริษัทเพื่อดู counterparty breakdown</div>
+      </div>
+      <div class="card-body" id="dash-co-table"></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">🔄 ยอดซื้อขายระหว่างกัน</div></div>
+      <div class="card-body" id="dash-flow-table"></div>
+    </div>
   </div>
-  <div class="card" style="margin-top:16px"><div class="card-hdr"><div class="card-title">Submission Status</div></div><div class="card-body" id="dash-status-table"></div></div>
+
+  <!-- Drill-down panel (hidden until company clicked) -->
+  <div id="dash-co-detail" style="display:none;margin-top:16px;border:2px solid #7B0D0D;border-radius:10px;overflow:hidden"></div>
+
+  <!-- Row 3: Tabs for BU + Status -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-hdr" style="padding-bottom:0;border-bottom:none">
+      <div class="card-title">📊 รายละเอียดเพิ่มเติม</div>
+      <div class="flex">
+        <button class="tab-btn act" id="dash-tab-btn-bu" onclick="switchDashTab('bu')">📦 BU Breakdown</button>
+        <button class="tab-btn" id="dash-tab-btn-status" onclick="switchDashTab('status')">📋 Submission Status</button>
+      </div>
+    </div>
+    <div id="dash-tab-bu" class="card-body"><div id="dash-bu-table"></div></div>
+    <div id="dash-tab-status" class="card-body" style="display:none"><div id="dash-status-table"></div></div>
+  </div>
+
 </div>
 
 </main>
@@ -710,12 +785,14 @@ const PUR_ITEMS=[
   {key:'pur_rental', label:'Rental Fee'},
   {key:'pur_svc',    label:'Service for Rental'},
   {key:'pur_royalty',label:'Royalty'},
+  {key:'pur_div',    label:'Dividend Paid'},
   {key:'pur_other',  label:'Other Cost',hasDetail:true},
 ];
 const SELL_ITEMS=[
   {key:'sell_transport',label:'Transportation Exp.'},
   {key:'sell_rental',   label:'Rental Fee'},
   {key:'sell_svc',      label:'Service for Rental'},
+  {key:'sell_mgmt',     label:'Management Fee'},
   {key:'sell_other',    label:'Other Exp.',hasDetail:true},
 ];
 const ADMIN_ITEMS=[
@@ -805,17 +882,36 @@ const BS_LIAB_GROUPS=[
 const BS_ASSET_FIELDS=BS_ASSET_GROUPS.flatMap(g=>g.items);
 const BS_LIAB_FIELDS=BS_LIAB_GROUPS.flatMap(g=>g.items);
 
-// Elimination mapping: revenue/income key → purchase/expense key (per BU product)
+// Elimination mapping: revenue/income key → purchase/expense key (per BU product) — 1:1 pairs
 const ELIM_MAP={};
 PRODUCTS.forEach(p=>{
-  ELIM_MAP[`sale_${p}`]      =`pur_inv_${p}`;
-  ELIM_MAP[`fa_sale_${p}`]   =`fa_fixed_${p}`;
-  ELIM_MAP[`oi_mgmt_${p}`]   =`admin_mgmt_${p}`;
+  if(p!=='mold') ELIM_MAP[`sale_${p}`]    = `pur_inv_${p}`;
+  if(p!=='mold') ELIM_MAP[`fa_sale_${p}`] = `fa_fixed_${p}`;
+  // sale_mold & fa_sale_mold both handled in ELIM_MAP_MULTI
+  // oi_mgmt is handled in ELIM_MAP_MULTI (combined sell_mgmt + admin_mgmt)
   ELIM_MAP[`oi_rental_${p}`] =`pur_rental_${p}`;
   ELIM_MAP[`oi_svc_${p}`]    =`pur_svc_${p}`;
   ELIM_MAP[`oi_royalty_${p}`]=`pur_royalty_${p}`;
+  ELIM_MAP[`oi_div_${p}`]    =`pur_div_${p}`;
   ELIM_MAP[`int_income_${p}`]=`int_expense_${p}`;
 });
+
+// Multi-key elimination: revKeys[] (combined) ↔ expKeys[] (combined)
+// Used when companies in the group classify the same item differently
+const ELIM_MAP_MULTI=[
+  {
+    label:'Management Fee  (OI vs Selling + Admin)',
+    note:'Other Income — Management Fee ชนกับ Selling + Admin Management Fee รวมกัน เพราะแต่ละบริษัทตีความต่างกัน',
+    revKeys: PRODUCTS.map(p=>`oi_mgmt_${p}`),
+    expKeys: [...PRODUCTS.map(p=>`sell_mgmt_${p}`),...PRODUCTS.map(p=>`admin_mgmt_${p}`)],
+  },
+  {
+    label:'Sale — Mold  (vs Mold-Repairing / Fixed Asset)',
+    note:'Srithai Mold บันทึกรายได้เป็น Sale — Mold แต่ผู้ซื้ออาจบันทึกเป็น Inventory, Mold-Repairing (ซ่อมแม่พิมพ์) หรือ Fixed Asset เพราะแต่ละบริษัทตีความต่างกัน',
+    revKeys: ['sale_mold','fa_sale_mold'],
+    expKeys: ['pur_inv_mold','pur_mold_mold','fa_mold_mold','fa_fixed_mold'],
+  },
+];
 // Flat labels lookup
 const ALL_PL_FLAT=[...SALE_MATRIX_FIELDS,...OI_FIELDS,...INT_INCOME_FIELDS,...PUR_FIELDS,...SELL_FIELDS,...ADMIN_FIELDS,...INT_EXPENSE_FIELDS,...FA_PUR_FIELDS];
 const BS_LABELS={...Object.fromEntries([...BS_ASSET_FIELDS,...BS_LIAB_FIELDS].map(f=>[f.key,f.label]))};
@@ -1096,20 +1192,20 @@ function buildCpForm(cpId){
   return `
   <div class="alert al-info" style="margin-bottom:12px"><strong>คู่รายการ:</strong> ${name}</div>
 
-  <!-- PL / BS inner tab bar -->
-  <div style="display:flex;gap:0;margin-bottom:0;border-bottom:2px solid #3b82f6">
-    <button id="bspltab-pl-${cpId}" onclick="switchBsPl('${cpId}','pl')"
-      style="padding:9px 20px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;background:#3b82f6;color:#fff;margin-right:4px;transition:all .2s">
-      📊 PL — Profit &amp; Loss
-    </button>
+  <!-- BS / PL inner tab bar -->
+  <div style="display:flex;gap:0;margin-bottom:0;border-bottom:2px solid #7B0D0D">
     <button id="bspltab-bs-${cpId}" onclick="switchBsPl('${cpId}','bs')"
-      style="padding:9px 20px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;background:#e2e8f0;color:#718096;transition:all .2s">
+      style="padding:9px 20px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;background:#7B0D0D;color:#fff;margin-right:4px;transition:all .2s">
       🏦 BS — Balance Sheet
+    </button>
+    <button id="bspltab-pl-${cpId}" onclick="switchBsPl('${cpId}','pl')"
+      style="padding:9px 20px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;background:#e2e8f0;color:#718096;transition:all .2s">
+      📊 PL — Profit &amp; Loss
     </button>
   </div>
 
-  <!-- PL Pane (default visible) -->
-  <div id="bsplpane-pl-${cpId}" style="padding-top:12px">
+  <!-- PL Pane (hidden by default) -->
+  <div id="bsplpane-pl-${cpId}" style="display:none;padding-top:12px">
     <!-- REVENUE / SALE SECTION -->
     <div class="fin-sec">
       <div class="fin-hdr h1">ส่วนที่ 1 : รายได้ (Revenue / Sales)</div>
@@ -1131,8 +1227,8 @@ function buildCpForm(cpId){
     </div>
   </div>
 
-  <!-- BS Pane (hidden by default) -->
-  <div id="bsplpane-bs-${cpId}" style="display:none;padding-top:12px">
+  <!-- BS Pane (visible by default) -->
+  <div id="bsplpane-bs-${cpId}" style="padding-top:12px">
     ${buildBsForm(cpId)}
   </div>
 
@@ -1170,12 +1266,12 @@ function switchBsPl(cpId, tab){
   const bsPane=document.getElementById(`bsplpane-bs-${cpId}`);
   if(!plTab||!bsTab||!plPane||!bsPane)return;
   if(tab==='bs'){
-    bsTab.style.cssText='padding:9px 20px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;background:#553c9a;color:#fff;transition:all .2s';
-    plTab.style.cssText='padding:9px 20px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;background:#e2e8f0;color:#718096;margin-right:4px;transition:all .2s';
+    bsTab.style.cssText='padding:9px 20px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;background:#7B0D0D;color:#fff;margin-right:4px;transition:all .2s';
+    plTab.style.cssText='padding:9px 20px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;background:#e2e8f0;color:#718096;transition:all .2s';
     bsPane.style.display='block';plPane.style.display='none';
   } else {
-    plTab.style.cssText='padding:9px 20px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;background:#3b82f6;color:#fff;margin-right:4px;transition:all .2s';
-    bsTab.style.cssText='padding:9px 20px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;background:#e2e8f0;color:#718096;transition:all .2s';
+    plTab.style.cssText='padding:9px 20px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;background:#C0392B;color:#fff;transition:all .2s';
+    bsTab.style.cssText='padding:9px 20px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;background:#e2e8f0;color:#718096;margin-right:4px;transition:all .2s';
     plPane.style.display='block';bsPane.style.display='none';
   }
 }
@@ -1371,6 +1467,9 @@ function buildFinTable(cpId,sec,title,fields,hClass='h1'){
 const buildSimpleTable=buildFinTable;
 
 // BU table: rows = items, columns = Plastic | Melamine | Beverage | Mold | Total (THB)
+// "Other" items that get 5 expandable sub-detail rows in form + matching
+const OTHER_DETAIL_KEYS=['oi_other','pur_other','sell_other','admin_other'];
+
 function buildBuTable(cpId, secKey, title, items, hClass='h3'){
   const curr=CURRENCY_MAP[state.reportingCompany];
   const ni=(id)=>`<input class="ni" type="text" inputmode="decimal" id="${id}" onfocus="unfmtNi(this)" onblur="fmtNi(this);calcTotals('${cpId}')" oninput="calcTotals('${cpId}')" placeholder="0.00" autocomplete="off">`;
@@ -1388,9 +1487,23 @@ function buildBuTable(cpId, secKey, title, items, hClass='h3'){
       <td class="td" id="${rowTotId}" style="width:${curr?'12%':'20%'}">0.00</td>
     </tr>`;
     if(item.hasDetail){
-      rows+=`<tr><td colspan="${PRODUCTS.length+2}" style="padding:2px 6px 6px 20px">
-        <input class="di" id="${cpId}_${item.key}_detail" placeholder="Please identify...">
-      </td></tr>`;
+      if(OTHER_DETAIL_KEYS.includes(item.key)){
+        // 5 expandable sub-detail rows
+        rows+=`<tr style="background:#f8fafc"><td colspan="${PRODUCTS.length+2}" style="padding:3px 8px 3px 16px">
+          <button style="font-size:11px;padding:2px 8px;border:1px solid #cbd5e0;border-radius:4px;background:white;cursor:pointer;color:#553c9a" onclick="toggleSubDetail('${cpId}_${item.key}',this)">▶ รายละเอียดย่อย</button>
+        </td></tr>`;
+        for(let n=1;n<=5;n++){
+          rows+=`<tr class="sub-detail-row" id="sub-${cpId}_${item.key}_${n}" style="display:none">
+            <td style="padding-left:24px!important"><input class="di" id="${cpId}_${item.key}_lbl${n}" placeholder="รายละเอียดที่ ${n}..." style="width:100%"></td>
+            ${PRODUCTS.map(p=>`<td class="num">${ni(`${cpId}_${item.key}_d${n}_${p}`)}</td>`).join('')}
+            <td class="td" id="subtot-${cpId}_${item.key}_${n}" style="font-size:12px;color:#553c9a">-</td>
+          </tr>`;
+        }
+      } else {
+        rows+=`<tr><td colspan="${PRODUCTS.length+2}" style="padding:2px 6px 6px 20px">
+          <input class="di" id="${cpId}_${item.key}_detail" placeholder="Please identify...">
+        </td></tr>`;
+      }
     }
   });
   return `
@@ -1412,6 +1525,20 @@ function buildBuTable(cpId, secKey, title, items, hClass='h3'){
       </tr>
     </tfoot>
   </table>`;
+}
+
+function toggleSubDetail(key,btn){
+  let anyVisible=false;
+  for(let n=1;n<=5;n++){
+    const el=document.getElementById(`sub-${key}_${n}`);
+    if(el&&el.style.display!=='none')anyVisible=true;
+  }
+  const show=!anyVisible;
+  for(let n=1;n<=5;n++){
+    const el=document.getElementById(`sub-${key}_${n}`);
+    if(el)el.style.display=show?'table-row':'none';
+  }
+  if(btn)btn.textContent=(show?'▼ ':'▶ ')+'รายละเอียดย่อย';
 }
 
 function switchCp(cpId){
@@ -1468,6 +1595,36 @@ function calcTotals(cpId){
   });
   setTd(`tot-${cpId}-SALE-NET`,saleNet);
 
+  // Sub-detail rows: sum per-product into parent field before section totals run
+  OTHER_DETAIL_KEYS.forEach(baseKey=>{
+    let hasAny=false;
+    const subSums={};
+    PRODUCTS.forEach(p=>{subSums[p]=0;});
+    for(let n=1;n<=5;n++){
+      PRODUCTS.forEach(p=>{
+        const el=document.getElementById(`${cpId}_${baseKey}_d${n}_${p}`);
+        if(el){const v=parseNi(el.value)||0;if(v)hasAny=true;subSums[p]+=v;}
+      });
+    }
+    PRODUCTS.forEach(p=>{
+      const parentEl=document.getElementById(`${cpId}_${baseKey}_${p}`);
+      if(!parentEl)return;
+      if(hasAny){
+        const s=subSums[p];
+        parentEl.value=s?s.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+        parentEl.readOnly=true;
+        parentEl.style.background='#edf2f7';
+        parentEl.style.color='#553c9a';
+        parentEl.style.fontWeight='600';
+      } else {
+        parentEl.readOnly=false;
+        parentEl.style.background='';
+        parentEl.style.color='';
+        parentEl.style.fontWeight='';
+      }
+    });
+  });
+
   // BU section totals (PL non-sale sections, using PL rate)
   BU_SECS.forEach(sec=>{
     const colTots={};
@@ -1521,6 +1678,18 @@ function calcTotals(cpId){
     totalBsLib+=grpTot;
   });
   setTd(`tot-bslib-${cpId}`,totalBsLib);
+
+  // Sub-detail row totals (informational, not included in section totals)
+  OTHER_DETAIL_KEYS.forEach(baseKey=>{
+    for(let n=1;n<=5;n++){
+      const subTot=PRODUCTS.reduce((s,p)=>{
+        const el=document.getElementById(`${cpId}_${baseKey}_d${n}_${p}`);
+        return s+(el?parseNi(el.value)*rate||0:0);
+      },0);
+      const totEl=document.getElementById(`subtot-${cpId}_${baseKey}_${n}`);
+      if(totEl)totEl.textContent=subTot?fmtNum(subTot):'-';
+    }
+  });
 }
 
 function setTd(id,val){
@@ -1575,6 +1744,21 @@ function collectFormData(){
         }
       });
     });
+    // Sub-detail rows for Other items (5 rows each: label + BU amounts)
+    OTHER_DETAIL_KEYS.forEach(baseKey=>{
+      for(let n=1;n<=5;n++){
+        const lblEl=document.getElementById(`${cpId}_${baseKey}_lbl${n}`);
+        if(lblEl)state.entries[cpId][`${baseKey}_lbl${n}`]=lblEl.value||'';
+        PRODUCTS.forEach(p=>{
+          const amtEl=document.getElementById(`${cpId}_${baseKey}_d${n}_${p}`);
+          if(amtEl){
+            const fcAmt=parseNi(amtEl.value)||0;
+            state.entries[cpId][`${baseKey}_d${n}_${p}`]=fcAmt*rate;
+            if(curr)state.entries[cpId][`${baseKey}_d${n}_${p}_fc`]=fcAmt;
+          }
+        });
+      }
+    });
   });
 }
 
@@ -1624,6 +1808,20 @@ function restoreFormValues(){
         }
       });
     });
+    // Restore sub-detail rows for Other items
+    OTHER_DETAIL_KEYS.forEach(baseKey=>{
+      for(let n=1;n<=5;n++){
+        const lblEl=document.getElementById(`${cpId}_${baseKey}_lbl${n}`);
+        if(lblEl&&data[`${baseKey}_lbl${n}`])lblEl.value=data[`${baseKey}_lbl${n}`];
+        PRODUCTS.forEach(p=>{
+          const amtEl=document.getElementById(`${cpId}_${baseKey}_d${n}_${p}`);
+          if(amtEl){
+            const raw=curr&&data[`${baseKey}_d${n}_${p}_fc`]!==undefined?data[`${baseKey}_d${n}_${p}_fc`]:data[`${baseKey}_d${n}_${p}`];
+            if(raw){const abs=Math.abs(raw).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});amtEl.value=raw<0?'('+abs+')':abs;}
+          }
+        });
+      }
+    });
     calcTotals(cpId);
   });
   restoreFileLists();
@@ -1631,7 +1829,95 @@ function restoreFormValues(){
 
 // ===================== STEP 5: REVIEW =====================
 function buildReview(){
-  let html='';
+  // ── Compute grand totals across all counterparties ──
+  const allRevFields=[...SALE_MATRIX_FIELDS,...OI_FIELDS,...INT_INCOME_FIELDS];
+  const allExpFields=[...PUR_FIELDS,...SELL_FIELDS,...ADMIN_FIELDS,...INT_EXPENSE_FIELDS,...FA_PUR_FIELDS];
+  let gRev=0,gExp=0,gAst=0,gLib=0;
+  const cpRows=state.counterparties.map(cpId=>{
+    const data=state.entries[cpId]||{};
+    const rev=allRevFields.reduce((s,f)=>{const v=data[f.key]||0;return(f.rowKey==='cost'||f.rowKey==='fa_cost')?s-v:s+v;},0);
+    const exp=allExpFields.reduce((s,f)=>s+(data[f.key]||0),0);
+    const ast=BS_ASSET_FIELDS.reduce((s,f)=>s+(data[f.key]||0),0);
+    const lib=BS_LIAB_FIELDS.reduce((s,f)=>s+(data[f.key]||0),0);
+    gRev+=rev;gExp+=exp;gAst+=ast;gLib+=lib;
+    return{cpId,name:getCoName(cpId),rev,exp,ast,lib};
+  });
+  const gNet=gRev-gExp;
+  const numStyle=(v)=>v<0?'color:#e53e3e;font-weight:700':'color:#2d3748;font-weight:700';
+  const cpRowsHtml=cpRows.map(r=>`
+    <tr>
+      <td style="padding:6px 10px;font-size:12px;color:#2d3748">${r.name}</td>
+      <td class="num" style="padding:6px 10px;font-size:12px;${r.rev<0?'color:#e53e3e':''}">${fmtNum(r.rev)}</td>
+      <td class="num" style="padding:6px 10px;font-size:12px">${fmtNum(r.exp)}</td>
+      <td class="num" style="padding:6px 10px;font-size:12px;${(r.rev-r.exp)<0?'color:#e53e3e;font-weight:700':'color:#276749;font-weight:700'}">${fmtNum(r.rev-r.exp)}</td>
+      <td class="num" style="padding:6px 10px;font-size:12px">${fmtNum(r.ast)}</td>
+      <td class="num" style="padding:6px 10px;font-size:12px">${fmtNum(r.lib)}</td>
+    </tr>`).join('');
+
+  let html=`
+  <div style="margin-bottom:24px">
+    <div style="font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B0D0D,#B22222);padding:8px 14px;border-radius:8px 8px 0 0;letter-spacing:.5px">
+      📋 สรุปรวมทั้งหมด — Grand Summary
+    </div>
+    <!-- KPI cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;padding:14px;background:#fff8f8;border:1px solid #fecaca;border-top:none">
+      <div style="background:white;border-radius:8px;padding:12px 14px;border-top:3px solid #C0392B;box-shadow:0 1px 3px rgba(0,0,0,.07)">
+        <div style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.5px">Total Revenue (Net)</div>
+        <div style="font-size:22px;font-weight:800;${gRev<0?'color:#e53e3e':'color:#2d3748'};margin:5px 0 2px">${fmtNum(gRev)}</div>
+        <div style="font-size:10px;color:#a0aec0">${state.counterparties.length} คู่รายการ</div>
+      </div>
+      <div style="background:white;border-radius:8px;padding:12px 14px;border-top:3px solid #38a169;box-shadow:0 1px 3px rgba(0,0,0,.07)">
+        <div style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.5px">Total Expense</div>
+        <div style="font-size:22px;font-weight:800;color:#2d3748;margin:5px 0 2px">${fmtNum(gExp)}</div>
+        <div style="font-size:10px;color:#a0aec0">${state.counterparties.length} คู่รายการ</div>
+      </div>
+      <div style="background:white;border-radius:8px;padding:12px 14px;border-top:3px solid ${gNet<0?'#e53e3e':'#3b82f6'};box-shadow:0 1px 3px rgba(0,0,0,.07)">
+        <div style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.5px">Net PL (Rev − Exp)</div>
+        <div style="font-size:22px;font-weight:800;${gNet<0?'color:#e53e3e':'color:#1e40af'};margin:5px 0 2px">${fmtNum(gNet)}</div>
+        <div style="font-size:10px;color:${gNet<0?'#e53e3e':'#3b82f6'}">${gNet<0?'⚠️ ขาดทุนสุทธิ':'✅ กำไรสุทธิ'}</div>
+      </div>
+      <div style="background:white;border-radius:8px;padding:12px 14px;border-top:3px solid #744210;box-shadow:0 1px 3px rgba(0,0,0,.07)">
+        <div style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.5px">Total Interco. Assets</div>
+        <div style="font-size:22px;font-weight:800;color:#2d3748;margin:5px 0 2px">${fmtNum(gAst)}</div>
+        <div style="font-size:10px;color:#a0aec0">ลูกหนี้ระหว่างกัน</div>
+      </div>
+      <div style="background:white;border-radius:8px;padding:12px 14px;border-top:3px solid #553c9a;box-shadow:0 1px 3px rgba(0,0,0,.07)">
+        <div style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.5px">Total Interco. Liab.</div>
+        <div style="font-size:22px;font-weight:800;color:#2d3748;margin:5px 0 2px">${fmtNum(gLib)}</div>
+        <div style="font-size:10px;color:#a0aec0">เจ้าหนี้ระหว่างกัน</div>
+      </div>
+    </div>
+    <!-- Summary table -->
+    <div style="overflow-x:auto;border:1px solid #e2e8f0;border-top:none">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:#2d3748;color:white">
+            <th style="padding:8px 10px;text-align:left;min-width:180px">บริษัทคู่รายการ</th>
+            <th style="padding:8px 10px;text-align:right">Revenue (Net)</th>
+            <th style="padding:8px 10px;text-align:right">Expense</th>
+            <th style="padding:8px 10px;text-align:right">Net PL</th>
+            <th style="padding:8px 10px;text-align:right">Interco. Assets</th>
+            <th style="padding:8px 10px;text-align:right">Interco. Liab.</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${cpRowsHtml}
+          <tr style="background:#dbeafe;font-weight:700;border-top:2px solid #3b82f6">
+            <td style="padding:8px 10px;font-size:12px;color:#1e40af">รวมทั้งหมด</td>
+            <td class="num" style="padding:8px 10px;${numStyle(gRev)};color:${gRev<0?'#e53e3e':'#1e40af'}">${fmtNum(gRev)}</td>
+            <td class="num" style="padding:8px 10px;color:#1e40af;font-weight:700">${fmtNum(gExp)}</td>
+            <td class="num" style="padding:8px 10px;${numStyle(gNet)};color:${gNet<0?'#e53e3e':'#1e40af'}">${fmtNum(gNet)}</td>
+            <td class="num" style="padding:8px 10px;color:#1e40af;font-weight:700">${fmtNum(gAst)}</td>
+            <td class="num" style="padding:8px 10px;color:#1e40af;font-weight:700">${fmtNum(gLib)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <hr class="sep">
+  <div style="font-size:12px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">รายละเอียดแยกตามคู่รายการ</div>
+  `;
+
   state.counterparties.forEach(cpId=>{
     const data=state.entries[cpId]||{};
     const name=getCoName(cpId);
@@ -1849,85 +2135,202 @@ function deleteEntry(co,yr,qt){
 }
 
 // ===================== REPORT PAGE =====================
+// Active report tab: 'pl' or 'bs'
+window._rptTab='pl';
+window._rptGroup=null;
+window._matchCos=[];
+
+function selectRptCo(){
+  // Selecting a specific company → clear group selection
+  window._rptGroup=null;
+  ['all','sub','assoL','assoF','other'].forEach(k=>{
+    const el=document.getElementById(`rpt-grp-${k}`);
+    if(el)el.classList.remove('btn-grp-act');
+  });
+  renderReport();
+}
+
+function selectRptGrp(grp){
+  window._rptGroup=grp==='all'?null:grp;
+  document.getElementById('rpt-company').value='';
+  ['all','sub','assoL','assoF','other'].forEach(k=>{
+    const el=document.getElementById(`rpt-grp-${k}`);
+    if(el)el.classList.remove('btn-grp-act');
+  });
+  const keyMap={null:'all',subsidiary:'sub',associateLocal:'assoL',associateForeign:'assoF',other:'other'};
+  const actEl=document.getElementById(`rpt-grp-${keyMap[window._rptGroup]||'all'}`);
+  if(actEl)actEl.classList.add('btn-grp-act');
+  renderReport();
+}
+
 function renderReport(){
   const co=document.getElementById('rpt-company').value;
   const yr=document.getElementById('rpt-year').value;
   const qt=document.getElementById('rpt-quarter').value;
-  if(!co){document.getElementById('report-content').innerHTML='<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">เลือกบริษัทเพื่อดูรายงาน</div></div>';return;}
-  let data=loadData().filter(d=>d.reportingCompany===co);
+  const grp=window._rptGroup;
+
+  let data=loadData();
   if(yr)data=data.filter(d=>d.year===yr);
   if(qt)data=data.filter(d=>d.quarter===qt);
+
+  let titleLabel='';
+  if(grp){
+    const grpIds=(COMPANIES[grp]||[]).map(c=>c.id);
+    data=data.filter(d=>grpIds.includes(d.reportingCompany));
+    titleLabel=GROUP_LABELS[grp]||grp;
+  } else if(co){
+    data=data.filter(d=>d.reportingCompany===co);
+    titleLabel=getCoName(co);
+  } else {
+    document.getElementById('report-content').innerHTML='<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">เลือกบริษัทหรือกลุ่มเพื่อดูรายงาน</div></div>';
+    return;
+  }
   if(!data.length){document.getElementById('report-content').innerHTML='<div class="empty"><div class="empty-icon">📂</div><div class="empty-title">ไม่พบข้อมูล</div></div>';return;}
 
   const cps=[...new Set(data.map(d=>d.counterparty))];
   const allRevFields=[...SALE_MATRIX_FIELDS,...OI_FIELDS,...INT_INCOME_FIELDS];
   const allExpFields=[...PUR_FIELDS,...SELL_FIELDS,...ADMIN_FIELDS,...INT_EXPENSE_FIELDS,...FA_PUR_FIELDS];
 
-  // Build lookup: cpId -> aggregated values
+  // Aggregate per counterparty
   const cpData={};
   cps.forEach(cp=>{cpData[cp]={};});
   data.forEach(d=>{
     const cp=d.counterparty;
-    ALL_FIELDS.forEach(f=>{
-      cpData[cp][f.key]=(cpData[cp][f.key]||0)+(d[f.key]||0);
-    });
+    ALL_FIELDS.forEach(f=>{cpData[cp][f.key]=(cpData[cp][f.key]||0)+(d[f.key]||0);});
   });
 
   const getVal=(cp,key)=>cpData[cp]?cpData[cp][key]||0:0;
+  const cpN=cps.length;
+  const sn=co=>getCoName(co).replace('Co., Ltd.','').replace('Co.Ltd.','').trim();
+  const thd=`<th style="min-width:180px">ประเภทรายการ</th>${cps.map(cp=>`<th>${sn(cp)}</th>`).join('')}<th style="background:#274c77">Total</th>`;
 
-  let html=`<div class="rt-wrap"><table class="rt" id="rpt-table">
-  <thead><tr>
-    <th>ประเภทรายการ</th>
-    ${cps.map(cp=>`<th>${getCoName(cp).replace('Co., Ltd.','').replace('Co.Ltd.','').trim()}</th>`).join('')}
-    <th style="background:#274c77">Total</th>
-  </tr></thead><tbody>`;
+  // ── Cost/negative row helper ──
+  const isNegRow=f=>f.rowKey==='cost'||f.rowKey==='fa_cost';
+  const fmtCell=(v,neg)=>{
+    if(!v)return `<td class="zero">-</td>`;
+    const s=fmtNum(v);
+    return neg?`<td class="num cost-neg">(${s})</td>`:`<td class="num-pos">${s}</td>`;
+  };
+  const fmtTotCell=(v,neg)=>{
+    const s=fmtNum(v);
+    return neg&&v?`<td style="font-weight:600" class="cost-neg">(${s})</td>`:`<td style="font-weight:600">${fmtNum(v)}</td>`;
+  };
+
+  // ── BUILD PL TABLE ──
+  let plHtml=`<div class="rt-wrap"><table class="rt" id="rpt-table-pl"><thead><tr>${thd}</tr></thead><tbody>`;
 
   const renderSection=(label,fields)=>{
-    html+=`<tr class="rs-hdr"><td colspan="${cps.length+2}">${label}</td></tr>`;
+    plHtml+=`<tr class="rs-hdr"><td colspan="${cpN+2}">${label}</td></tr>`;
     fields.forEach(f=>{
+      const neg=isNegRow(f);
       const vals=cps.map(cp=>getVal(cp,f.key));
       const tot=vals.reduce((a,b)=>a+b,0);
       if(!tot)return;
-      html+=`<tr><td>${f.label}</td>${vals.map(v=>`<td class="${v?'num-pos':'zero'}">${fmtNum(v)}</td>`).join('')}<td style="font-weight:600">${fmtNum(tot)}</td></tr>`;
+      const labelTd=neg?`<td style="padding-left:22px" class="cost-neg">↳ ${f.label}</td>`:`<td style="padding-left:22px">${f.label}</td>`;
+      plHtml+=`<tr>${labelTd}${vals.map(v=>fmtCell(v,neg)).join('')}${fmtTotCell(tot,neg)}</tr>`;
     });
+    // Section total: for cost rows show net (sum already has sign from raw values which are always positive)
+    const isCostSec=fields.every(f=>isNegRow(f));
     const tots=cps.map(cp=>fields.reduce((s,f)=>s+getVal(cp,f.key),0));
     const gtot=tots.reduce((a,b)=>a+b,0);
-    html+=`<tr class="rt-tot"><td>Total ${label}</td>${tots.map(v=>`<td>${fmtNum(v)}</td>`).join('')}<td>${fmtNum(gtot)}</td></tr>`;
+    if(isCostSec){
+      plHtml+=`<tr class="rt-tot cost-neg"><td>Total ${label}</td>${tots.map(v=>`<td class="cost-neg">${v?`(${fmtNum(v)})`:'-'}</td>`).join('')}<td class="cost-neg">${gtot?`(${fmtNum(gtot)})`:'-'}</td></tr>`;
+    } else {
+      plHtml+=`<tr class="rt-tot"><td>Total ${label}</td>${tots.map(v=>`<td>${fmtNum(v)}</td>`).join('')}<td>${fmtNum(gtot)}</td></tr>`;
+    }
   };
 
-  // PL section header
-  html+=`<tr style="background:#7B0D0D"><td colspan="${cps.length+2}" style="color:#fff;font-weight:700;padding:6px 11px;font-size:12px;letter-spacing:.5px">📊 PROFIT & LOSS</td></tr>`;
-  SALE_ROW_DEFS.forEach(r=>{
-    const rowFields=SALE_MATRIX_FIELDS.filter(f=>f.rowKey===r.rowKey);
-    renderSection(r.label,rowFields);
-  });
+  // Revenue section
+  plHtml+=`<tr style="background:#7B0D0D"><td colspan="${cpN+2}" style="color:#fff;font-weight:700;padding:6px 11px;font-size:12px;letter-spacing:.5px">📊 PROFIT & LOSS — REVENUE</td></tr>`;
+  SALE_ROW_DEFS.forEach(r=>renderSection(r.label,SALE_MATRIX_FIELDS.filter(f=>f.rowKey===r.rowKey)));
   renderSection('Other Income',OI_FIELDS);
   renderSection('Interest Income',INT_INCOME_FIELDS);
   const revTots=cps.map(cp=>allRevFields.reduce((s,f)=>{const v=getVal(cp,f.key);return (f.rowKey==='cost'||f.rowKey==='fa_cost')?s-v:s+v;},0));
-  html+=`<tr class="rt-gtot"><td>TOTAL REVENUE (Net)</td>${revTots.map(v=>`<td>${fmtNum(v)}</td>`).join('')}<td>${fmtNum(revTots.reduce((a,b)=>a+b,0))}</td></tr>`;
+  plHtml+=`<tr class="rt-gtot"><td>TOTAL REVENUE (Net of Cost)</td>${revTots.map(v=>`<td>${fmtNum(v)}</td>`).join('')}<td>${fmtNum(revTots.reduce((a,b)=>a+b,0))}</td></tr>`;
 
+  // Expense section
+  plHtml+=`<tr style="background:#C0392B"><td colspan="${cpN+2}" style="color:#fff;font-weight:700;padding:6px 11px;font-size:12px;letter-spacing:.5px">📊 PROFIT & LOSS — EXPENSE</td></tr>`;
   renderSection('PURCHASE',PUR_FIELDS);
   renderSection('SELLING EXP.',SELL_FIELDS);
   renderSection('ADMIN EXP.',ADMIN_FIELDS);
   renderSection('Interest Expense',INT_EXPENSE_FIELDS);
   renderSection('FIXED ASSET',FA_PUR_FIELDS);
   const expTots=cps.map(cp=>allExpFields.reduce((s,f)=>s+getVal(cp,f.key),0));
-  html+=`<tr class="rt-gtot"><td>TOTAL EXPENSE</td>${expTots.map(v=>`<td>${fmtNum(v)}</td>`).join('')}<td>${fmtNum(expTots.reduce((a,b)=>a+b,0))}</td></tr>`;
+  plHtml+=`<tr class="rt-gtot"><td>TOTAL EXPENSE</td>${expTots.map(v=>`<td>${fmtNum(v)}</td>`).join('')}<td>${fmtNum(expTots.reduce((a,b)=>a+b,0))}</td></tr>`;
+  plHtml+='</tbody></table></div>';
 
-  // BS section header
-  html+=`<tr style="background:#553c9a"><td colspan="${cps.length+2}" style="color:#fff;font-weight:700;padding:6px 11px;font-size:12px;letter-spacing:.5px">🏦 BALANCE SHEET</td></tr>`;
-  renderSection('Interco. Assets (ลูกหนี้)',BS_ASSET_FIELDS);
-  const astTots=cps.map(cp=>BS_ASSET_FIELDS.reduce((s,f)=>s+getVal(cp,f.key),0));
-  html+=`<tr class="rt-gtot"><td>TOTAL INTERCO. ASSETS</td>${astTots.map(v=>`<td>${fmtNum(v)}</td>`).join('')}<td>${fmtNum(astTots.reduce((a,b)=>a+b,0))}</td></tr>`;
-  renderSection('Interco. Liabilities (เจ้าหนี้)',BS_LIAB_FIELDS);
-  const libTots=cps.map(cp=>BS_LIAB_FIELDS.reduce((s,f)=>s+getVal(cp,f.key),0));
-  html+=`<tr class="rt-gtot"><td>TOTAL INTERCO. LIABILITIES</td>${libTots.map(v=>`<td>${fmtNum(v)}</td>`).join('')}<td>${fmtNum(libTots.reduce((a,b)=>a+b,0))}</td></tr>`;
+  // ── BUILD BS TABLE ──
+  let bsHtml=`<div class="rt-wrap"><table class="rt" id="rpt-table-bs"><thead><tr>${thd}</tr></thead><tbody>`;
 
-  html+='</tbody></table></div>';
-  document.getElementById('report-content').innerHTML=html;
+  const renderBsGroup=(sectionLabel,sectionColor,groups)=>{
+    bsHtml+=`<tr style="background:${sectionColor}"><td colspan="${cpN+2}" style="color:#fff;font-weight:700;padding:6px 11px;font-size:12px;letter-spacing:.5px">${sectionLabel}</td></tr>`;
+    groups.forEach(g=>{
+      const grpTots=cps.map(cp=>g.items.reduce((s,f)=>s+getVal(cp,f.key),0));
+      const grpGrand=grpTots.reduce((a,b)=>a+b,0);
+      if(!grpGrand)return;
+      bsHtml+=`<tr style="background:#f0f4ff"><td style="font-weight:700;padding:7px 11px;color:#1a365d">▼ ${g.label}</td>${grpTots.map(v=>`<td style="font-weight:700;color:#1a365d">${fmtNum(v)}</td>`).join('')}<td style="font-weight:700;color:#1a365d">${fmtNum(grpGrand)}</td></tr>`;
+      g.items.forEach(f=>{
+        const vals=cps.map(cp=>getVal(cp,f.key));
+        const tot=vals.reduce((a,b)=>a+b,0);
+        if(!tot)return;
+        bsHtml+=`<tr><td style="padding-left:28px;color:#4a5568;font-size:12px">└ ${f.label}</td>${vals.map(v=>`<td class="${v?'num-pos':'zero'}" style="font-size:12px">${fmtNum(v)}</td>`).join('')}<td style="font-size:12px">${fmtNum(tot)}</td></tr>`;
+      });
+    });
+    const secTots=cps.map(cp=>groups.flatMap(g=>g.items).reduce((s,f)=>s+getVal(cp,f.key),0));
+    const secGrand=secTots.reduce((a,b)=>a+b,0);
+    bsHtml+=`<tr class="rt-gtot"><td>TOTAL ${sectionLabel}</td>${secTots.map(v=>`<td>${fmtNum(v)}</td>`).join('')}<td>${fmtNum(secGrand)}</td></tr>`;
+  };
+
+  renderBsGroup('🏦 INTERCO. ASSETS (ลูกหนี้)','#7B0D0D',BS_ASSET_GROUPS);
+  renderBsGroup('🏦 INTERCO. LIABILITIES (เจ้าหนี้)','#553c9a',BS_LIAB_GROUPS);
+  bsHtml+='</tbody></table></div>';
+
+  // Title banner
+  const titleBanner=`<div style="padding:10px 14px;background:#f8f9fa;border-radius:6px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+    <span style="font-size:16px">📊</span>
+    <div><div style="font-size:14px;font-weight:700;color:#1a202c">${titleLabel}</div>
+    <div style="font-size:11px;color:#718096">${grp?`กลุ่ม: ${GROUP_LABELS[grp]||grp}`:'รายบริษัท'}</div></div>
+  </div>`;
+
+  // ── INJECT WITH TABS ──
+  const tabBase='padding:9px 22px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;transition:all .2s';
+  const plIsActive=window._rptTab!=='bs';
+  const plTabSt=plIsActive?`${tabBase};background:#C0392B;color:#fff;margin-right:4px`:`${tabBase};background:#e2e8f0;color:#718096;margin-right:4px`;
+  const bsTabSt=!plIsActive?`${tabBase};background:#7B0D0D;color:#fff`:`${tabBase};background:#e2e8f0;color:#718096`;
+
+  document.getElementById('report-content').innerHTML=`
+    ${titleBanner}
+    <div style="display:flex;gap:0;margin-bottom:0;border-bottom:2px solid #7B0D0D">
+      <button id="rpttab-pl" onclick="switchRptTab('pl')" style="${plTabSt}">📊 PL — Profit &amp; Loss</button>
+      <button id="rpttab-bs" onclick="switchRptTab('bs')" style="${bsTabSt}">🏦 BS — Balance Sheet</button>
+    </div>
+    <div id="rptpane-pl" style="padding-top:14px;${plIsActive?'':'display:none'}">${plHtml}</div>
+    <div id="rptpane-bs" style="padding-top:14px;${!plIsActive?'':'display:none'}">${bsHtml}</div>`;
+}
+
+function switchRptTab(tab){
+  window._rptTab=tab;
+  const plTab=document.getElementById('rpttab-pl');
+  const bsTab=document.getElementById('rpttab-bs');
+  const plPane=document.getElementById('rptpane-pl');
+  const bsPane=document.getElementById('rptpane-bs');
+  if(!plTab)return;
+  const tabBase='padding:9px 22px;font-size:13px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;transition:all .2s';
+  if(tab==='bs'){
+    bsTab.style.cssText=`${tabBase};background:#7B0D0D;color:#fff`;
+    plTab.style.cssText=`${tabBase};background:#e2e8f0;color:#718096;margin-right:4px`;
+    bsPane.style.display='block';plPane.style.display='none';
+  } else {
+    plTab.style.cssText=`${tabBase};background:#C0392B;color:#fff;margin-right:4px`;
+    bsTab.style.cssText=`${tabBase};background:#e2e8f0;color:#718096`;
+    plPane.style.display='block';bsPane.style.display='none';
+  }
 }
 
 // ===================== CONSOLIDATION =====================
+// Active inner tab per consolidation pane: 'pl' or 'bs'
+window._conTab={before:'pl',elim:'pl',after:'pl'};
+
 function renderConsolidation(){
   const yr=document.getElementById('con-year').value;
   const qt=document.getElementById('con-quarter').value;
@@ -1936,83 +2339,213 @@ function renderConsolidation(){
   if(qt)data=data.filter(d=>d.quarter===qt);
 
   const allFields=ALL_FIELDS;
+  const companies=[...new Set(data.map(d=>d.reportingCompany))];
 
-  // Aggregate "before" totals per field
+  // ── Aggregate "before" totals ──
   const before={};
   allFields.forEach(f=>before[f.key]=0);
   data.forEach(d=>allFields.forEach(f=>before[f.key]+=(d[f.key]||0)));
 
-  // Compute eliminations
+  // ── Compute PL eliminations ──
   const elim={};
   allFields.forEach(f=>elim[f.key]=0);
-  // For each pair (A sells to B, B buys from A), find the min and eliminate
-  const companies=[...new Set(data.map(d=>d.reportingCompany))];
   companies.forEach(coA=>{
     companies.forEach(coB=>{
       if(coA>=coB)return;
-      // A's revenue fields matched against B's expense fields
       Object.entries(ELIM_MAP).forEach(([revKey,expKey])=>{
         const aRevs=data.filter(d=>d.reportingCompany===coA&&d.counterparty===coB);
         const bExps=data.filter(d=>d.reportingCompany===coB&&d.counterparty===coA);
         const aAmt=aRevs.reduce((s,d)=>s+(d[revKey]||0),0);
         const bAmt=bExps.reduce((s,d)=>s+(d[expKey]||0),0);
-        const elimAmt=Math.min(aAmt,bAmt);
-        elim[revKey]=(elim[revKey]||0)+elimAmt;
-        elim[expKey]=(elim[expKey]||0)+elimAmt;
-        // Also check B sells to A
+        const e1=Math.min(aAmt,bAmt);
+        elim[revKey]=(elim[revKey]||0)+e1;
+        elim[expKey]=(elim[expKey]||0)+e1;
         const bRevs=data.filter(d=>d.reportingCompany===coB&&d.counterparty===coA);
         const aExps=data.filter(d=>d.reportingCompany===coA&&d.counterparty===coB);
         const bAmt2=bRevs.reduce((s,d)=>s+(d[revKey]||0),0);
         const aAmt2=aExps.reduce((s,d)=>s+(d[expKey]||0),0);
-        const elimAmt2=Math.min(bAmt2,aAmt2);
-        elim[revKey]=(elim[revKey]||0)+elimAmt2;
-        elim[expKey]=(elim[expKey]||0)+elimAmt2;
+        const e2=Math.min(bAmt2,aAmt2);
+        elim[revKey]=(elim[revKey]||0)+e2;
+        elim[expKey]=(elim[expKey]||0)+e2;
+      });
+      // Multi-key elimination (e.g. oi_mgmt ↔ sell_mgmt + admin_mgmt)
+      ELIM_MAP_MULTI.forEach(m=>{
+        const sumK=(rows,keys)=>rows.reduce((s,d)=>s+keys.reduce((ss,k)=>ss+(d[k]||0),0),0);
+        [[coA,coB],[coB,coA]].forEach(([seller,buyer])=>{
+          const selRows=data.filter(d=>d.reportingCompany===seller&&d.counterparty===buyer);
+          const buyRows=data.filter(d=>d.reportingCompany===buyer&&d.counterparty===seller);
+          const revTotal=sumK(selRows,m.revKeys);
+          const expTotal=sumK(buyRows,m.expKeys);
+          const elimAmt=Math.min(revTotal,expTotal);
+          if(!elimAmt)return;
+          // Distribute elimAmt across revKeys proportionally
+          m.revKeys.forEach(k=>{
+            const kAmt=selRows.reduce((s,d)=>s+(d[k]||0),0);
+            const share=revTotal?kAmt/revTotal*elimAmt:elimAmt/m.revKeys.length;
+            elim[k]=(elim[k]||0)+share;
+          });
+          // Distribute elimAmt across expKeys proportionally
+          m.expKeys.forEach(k=>{
+            const kAmt=buyRows.reduce((s,d)=>s+(d[k]||0),0);
+            const share=expTotal?kAmt/expTotal*elimAmt:elimAmt/m.expKeys.length;
+            elim[k]=(elim[k]||0)+share;
+          });
+        });
+      });
+    });
+  });
+
+  // ── Compute BS eliminations ──
+  const bsElimEntries=[]; // {astKey, liabKey, label, amount}
+  companies.forEach(coA=>{
+    companies.forEach(coB=>{
+      if(coA>=coB)return;
+      BS_MATCH_MAP.forEach(m=>{
+        [[coA,coB],[coB,coA]].forEach(([seller,buyer])=>{
+          const sumK=(rows,keys)=>rows.reduce((s,d)=>s+keys.reduce((ss,k)=>ss+(d[k]||0),0),0);
+          const astRows=data.filter(d=>d.reportingCompany===seller&&d.counterparty===buyer);
+          const liabRows=data.filter(d=>d.reportingCompany===buyer&&d.counterparty===seller);
+          const totalAst=sumK(astRows,m.astKeys);
+          const totalLiab=sumK(liabRows,m.liabKeys);
+          const elimAmt=Math.min(totalAst,totalLiab);
+          if(!elimAmt)return;
+          // Distribute elimAmt across astKeys proportionally
+          m.astKeys.forEach(k=>{
+            const kAmt=astRows.reduce((s,d)=>s+(d[k]||0),0);
+            const share=totalAst?kAmt/totalAst*elimAmt:elimAmt/m.astKeys.length;
+            elim[k]=(elim[k]||0)+share;
+          });
+          // Distribute elimAmt across liabKeys proportionally
+          m.liabKeys.forEach(k=>{
+            const kAmt=liabRows.reduce((s,d)=>s+(d[k]||0),0);
+            const share=totalLiab?kAmt/totalLiab*elimAmt:elimAmt/m.liabKeys.length;
+            elim[k]=(elim[k]||0)+share;
+          });
+          bsElimEntries.push({
+            astLabel:m.astKeys.length===1?BS_LABELS[m.astKeys[0]]||m.astKeys[0]:m.label.split('=')[0].trim(),
+            liabLabel:m.liabKeys.length===1?BS_LABELS[m.liabKeys[0]]||m.liabKeys[0]:m.label.split('=')[1]?.trim()||m.label,
+            label:m.label,amount:elimAmt,
+            coFrom:seller,coTo:buyer
+          });
+        });
       });
     });
   });
 
   const after={};
-  allFields.forEach(f=>after[f.key]=Math.max(0,before[f.key]-(elim[f.key]||0)));
+  allFields.forEach(f=>after[f.key]=Math.max(0,(before[f.key]||0)-(elim[f.key]||0)));
 
-  // Before
-  document.getElementById('con-before-content').innerHTML=buildConTable(before,'before',allFields,'con-table');
-  // Elim
-  document.getElementById('con-elim-content').innerHTML=buildElimTable(elim,allFields);
-  // After
-  document.getElementById('con-after-content').innerHTML=buildConTable(after,'after',allFields,'');
+  // ── Render each pane with PL/BS inner tabs ──
+  const wrapTabs=(paneId,plHtml,bsHtml,plTableId,bsTableId)=>{
+    const active=window._conTab[paneId]||'pl';
+    const tb='padding:8px 18px;font-size:12px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;transition:all .2s';
+    const plSt=active==='pl'?`${tb};background:#C0392B;color:#fff;margin-right:4px`:`${tb};background:#e2e8f0;color:#718096;margin-right:4px`;
+    const bsSt=active==='bs'?`${tb};background:#7B0D0D;color:#fff`:`${tb};background:#e2e8f0;color:#718096`;
+    return `
+      <div style="display:flex;gap:0;margin-bottom:0;border-bottom:2px solid #7B0D0D">
+        <button id="contab-pl-${paneId}" onclick="switchConSub('${paneId}','pl')" style="${plSt}">📊 PL — Profit &amp; Loss</button>
+        <button id="contab-bs-${paneId}" onclick="switchConSub('${paneId}','bs')" style="${bsSt}">🏦 BS — Balance Sheet</button>
+      </div>
+      <div id="conpane-pl-${paneId}" style="padding-top:12px${active==='bs'?';display:none':''}">${plHtml}</div>
+      <div id="conpane-bs-${paneId}" style="padding-top:12px${active==='pl'?';display:none':''}">${bsHtml}</div>`;
+  };
+
+  document.getElementById('con-before-content').innerHTML=
+    wrapTabs('before', buildConTablePL(before,'con-table-pl'), buildConTableBS(before,'con-table-bs'), 'con-table-pl','con-table-bs');
+  document.getElementById('con-elim-content').innerHTML=
+    wrapTabs('elim', buildElimTablePL(elim), buildElimTableBS(bsElimEntries), '', '');
+  document.getElementById('con-after-content').innerHTML=
+    wrapTabs('after', buildConTablePL(after,'con-after-pl'), buildConTableBS(after,'con-after-bs'), 'con-after-pl','con-after-bs');
 }
 
-function buildConTable(vals,mode,allFields,tableId){
+function switchConSub(paneId, tab){
+  window._conTab[paneId]=tab;
+  const plTab=document.getElementById(`contab-pl-${paneId}`);
+  const bsTab=document.getElementById(`contab-bs-${paneId}`);
+  const plPane=document.getElementById(`conpane-pl-${paneId}`);
+  const bsPane=document.getElementById(`conpane-bs-${paneId}`);
+  if(!plTab)return;
+  const tb='padding:8px 18px;font-size:12px;font-weight:700;border:none;cursor:pointer;border-radius:6px 6px 0 0;transition:all .2s';
+  if(tab==='bs'){
+    bsTab.style.cssText=`${tb};background:#7B0D0D;color:#fff`;
+    plTab.style.cssText=`${tb};background:#e2e8f0;color:#718096;margin-right:4px`;
+    bsPane.style.display='block'; plPane.style.display='none';
+  } else {
+    plTab.style.cssText=`${tb};background:#C0392B;color:#fff;margin-right:4px`;
+    bsTab.style.cssText=`${tb};background:#e2e8f0;color:#718096`;
+    plPane.style.display='block'; bsPane.style.display='none';
+  }
+}
+
+// Export whichever pane + sub-tab is currently visible
+function exportConExcel(){
+  // Determine which main tab is active
+  const mainPane=['before','elim','after'].find(id=>{
+    const el=document.getElementById(`con-${id}`);
+    return el&&el.classList.contains('act');
+  })||'before';
+  const sub=window._conTab[mainPane]||'pl';
+  const tableMap={
+    before:{pl:'con-table-pl',bs:'con-table-bs'},
+    elim:  {pl:'con-table',   bs:null},
+    after: {pl:'con-after-pl',bs:'con-after-bs'}
+  };
+  const tid=tableMap[mainPane]?.[sub];
+  if(tid)exportExcel(tid,`Consolidation_${mainPane}_${sub.toUpperCase()}`);
+  else alert('ไม่พบตารางที่จะ Export');
+}
+
+// ── PL table only ──
+function buildConTablePL(vals, tableId){
   const revFields=[...SALE_MATRIX_FIELDS,...OI_FIELDS,...INT_INCOME_FIELDS];
   const expFields=[...PUR_FIELDS,...SELL_FIELDS,...ADMIN_FIELDS,...INT_EXPENSE_FIELDS,...FA_PUR_FIELDS];
   const totalRev=revFields.reduce((s,f)=>{const v=vals[f.key]||0;return (f.rowKey==='cost'||f.rowKey==='fa_cost')?s-v:s+v;},0);
   const totalExp=expFields.reduce((s,f)=>s+(vals[f.key]||0),0);
-  const totalBsAst=BS_ASSET_FIELDS.reduce((s,f)=>s+(vals[f.key]||0),0);
-  const totalBsLib=BS_LIAB_FIELDS.reduce((s,f)=>s+(vals[f.key]||0),0);
-
   let rows='';
   const sec=(label,fields)=>{
     rows+=`<tr class="rs-hdr"><td colspan="2">${label}</td></tr>`;
-    fields.forEach(f=>{const v=vals[f.key]||0;if(!v)return;rows+=`<tr><td>${f.label}</td><td class="num">${fmtNum(v)}</td></tr>`;});
+    fields.forEach(f=>{const v=vals[f.key]||0;if(!v)return;rows+=`<tr><td style="padding-left:20px">${f.label}</td><td class="num">${fmtNum(v)}</td></tr>`;});
     const tot=fields.reduce((s,f)=>s+(vals[f.key]||0),0);
     rows+=`<tr class="rt-tot"><td>Total ${label}</td><td class="num">${fmtNum(tot)}</td></tr>`;
   };
-  rows+=`<tr style="background:#7B0D0D"><td colspan="2" style="color:#fff;font-weight:700;font-size:11px;letter-spacing:.5px">📊 PROFIT & LOSS</td></tr>`;
+  rows+=`<tr style="background:#7B0D0D"><td colspan="2" style="color:#fff;font-weight:700;font-size:11px;letter-spacing:.5px">📊 REVENUE</td></tr>`;
   SALE_ROW_DEFS.forEach(r=>sec(r.label,SALE_MATRIX_FIELDS.filter(f=>f.rowKey===r.rowKey)));
-  sec('Other Income',OI_FIELDS);sec('Interest Income',INT_INCOME_FIELDS);
+  sec('Other Income',OI_FIELDS); sec('Interest Income',INT_INCOME_FIELDS);
   rows+=`<tr class="rt-gtot"><td>TOTAL REVENUE (Net)</td><td class="num">${fmtNum(totalRev)}</td></tr>`;
-  sec('PURCHASE',PUR_FIELDS);sec('SELLING EXP.',SELL_FIELDS);sec('ADMIN EXP.',ADMIN_FIELDS);sec('Interest Expense',INT_EXPENSE_FIELDS);sec('FIXED ASSET',FA_PUR_FIELDS);
+  rows+=`<tr style="background:#C0392B"><td colspan="2" style="color:#fff;font-weight:700;font-size:11px;letter-spacing:.5px">📊 EXPENSE</td></tr>`;
+  sec('PURCHASE',PUR_FIELDS); sec('SELLING EXP.',SELL_FIELDS); sec('ADMIN EXP.',ADMIN_FIELDS);
+  sec('Interest Expense',INT_EXPENSE_FIELDS); sec('FIXED ASSET',FA_PUR_FIELDS);
   rows+=`<tr class="rt-gtot"><td>TOTAL EXPENSE</td><td class="num">${fmtNum(totalExp)}</td></tr>`;
-  rows+=`<tr style="background:#553c9a"><td colspan="2" style="color:#fff;font-weight:700;font-size:11px;letter-spacing:.5px">🏦 BALANCE SHEET</td></tr>`;
-  sec('Interco. Assets',BS_ASSET_FIELDS);
-  rows+=`<tr class="rt-gtot"><td>TOTAL INTERCO. ASSETS</td><td class="num">${fmtNum(totalBsAst)}</td></tr>`;
-  sec('Interco. Liabilities',BS_LIAB_FIELDS);
-  rows+=`<tr class="rt-gtot"><td>TOTAL INTERCO. LIABILITIES</td><td class="num">${fmtNum(totalBsLib)}</td></tr>`;
-
-  return `<div class="rt-wrap"><table class="rt" ${tableId?`id="${tableId}"`:''}><thead><tr><th style="text-align:left">Description</th><th>Amount (THB)</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  rows+=`<tr class="rt-gtot" style="background:#1a202c"><td>NET (Revenue − Expense)</td><td class="num">${fmtNum(totalRev-totalExp)}</td></tr>`;
+  return `<div class="rt-wrap"><table class="rt"${tableId?` id="${tableId}"`:''}><thead><tr><th style="text-align:left">Description</th><th>Amount (THB)</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
-function buildElimTable(elim,allFields){
+// ── BS table only (grouped) ──
+function buildConTableBS(vals, tableId){
+  const renderGroup=(sectionLabel,sectionColor,groups)=>{
+    let r=`<tr style="background:${sectionColor}"><td colspan="2" style="color:#fff;font-weight:700;font-size:11px;letter-spacing:.5px">${sectionLabel}</td></tr>`;
+    groups.forEach(g=>{
+      const grpTot=g.items.reduce((s,f)=>s+(vals[f.key]||0),0);
+      if(!grpTot)return;
+      r+=`<tr style="background:#f0f4ff"><td style="font-weight:700;padding:6px 11px;color:#1a365d">▼ ${g.label}</td><td style="font-weight:700;color:#1a365d;text-align:right">${fmtNum(grpTot)}</td></tr>`;
+      g.items.forEach(f=>{
+        const v=vals[f.key]||0; if(!v)return;
+        r+=`<tr><td style="padding-left:28px;color:#4a5568;font-size:12px">└ ${f.label}</td><td class="num" style="font-size:12px">${fmtNum(v)}</td></tr>`;
+      });
+    });
+    const secTot=groups.flatMap(g=>g.items).reduce((s,f)=>s+(vals[f.key]||0),0);
+    r+=`<tr class="rt-gtot"><td>TOTAL ${sectionLabel}</td><td class="num">${fmtNum(secTot)}</td></tr>`;
+    return r;
+  };
+  let rows=renderGroup('🏦 INTERCO. ASSETS (ลูกหนี้)','#7B0D0D',BS_ASSET_GROUPS);
+  rows+=renderGroup('🏦 INTERCO. LIABILITIES (เจ้าหนี้)','#553c9a',BS_LIAB_GROUPS);
+  const netBs=BS_ASSET_FIELDS.reduce((s,f)=>s+(vals[f.key]||0),0)-BS_LIAB_FIELDS.reduce((s,f)=>s+(vals[f.key]||0),0);
+  rows+=`<tr class="rt-gtot" style="background:#1a202c"><td>NET INTERCO. POSITION (Assets − Liabilities)</td><td class="num">${fmtNum(netBs)}</td></tr>`;
+  return `<div class="rt-wrap"><table class="rt"${tableId?` id="${tableId}"`:''}><thead><tr><th style="text-align:left">Description</th><th>Amount (THB)</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+// ── PL Elimination entries ──
+function buildElimTablePL(elim){
   let rows='';
   Object.entries(ELIM_MAP).forEach(([revKey,expKey])=>{
     const revAmt=elim[revKey]||0;
@@ -2023,11 +2556,101 @@ function buildElimTable(elim,allFields){
     if(revAmt)rows+=`<tr><td>Dr. ${revLabel}</td><td class="num" style="color:#e53e3e">(${fmtNum(revAmt)})</td><td>Eliminate IC Revenue</td></tr>`;
     if(expAmt)rows+=`<tr><td>Cr. ${expLabel}</td><td class="num" style="color:#276749">${fmtNum(expAmt)}</td><td>Eliminate IC Expense</td></tr>`;
   });
-  if(!rows)return'<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">ไม่มี Elimination Entries</div><div class="empty-sub">ไม่พบรายการที่ตรงกัน</div></div>';
-  return `<div class="rt-wrap"><table class="rt"><thead><tr><th style="text-align:left">Account</th><th>Amount</th><th style="text-align:left">Description</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  // Multi-key elimination entries (e.g. Management Fee combined)
+  ELIM_MAP_MULTI.forEach(m=>{
+    const revAmt=m.revKeys.reduce((s,k)=>s+(elim[k]||0),0);
+    const expAmt=m.expKeys.reduce((s,k)=>s+(elim[k]||0),0);
+    if(!revAmt&&!expAmt)return;
+    if(revAmt)rows+=`<tr style="background:#fff8e1"><td>Dr. ${m.label} <span style="font-size:10px;color:#718096">(Revenue side)</span></td><td class="num" style="color:#e53e3e">(${fmtNum(revAmt)})</td><td>Eliminate IC Revenue — ${m.note}</td></tr>`;
+    if(expAmt)rows+=`<tr style="background:#fff8e1"><td>Cr. ${m.label} <span style="font-size:10px;color:#718096">(Expense side)</span></td><td class="num" style="color:#276749">${fmtNum(expAmt)}</td><td>Eliminate IC Expense — combined keys</td></tr>`;
+  });
+  if(!rows)return'<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">ไม่มี PL Elimination</div><div class="empty-sub">ไม่พบรายการที่ตรงกัน</div></div>';
+  return `<div class="rt-wrap"><table class="rt" id="con-table"><thead><tr><th style="text-align:left">Account</th><th>Amount</th><th style="text-align:left">Description</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+// ── BS Elimination entries ──
+function buildElimTableBS(bsElimEntries){
+  if(!bsElimEntries.length)return'<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">ไม่มี BS Elimination</div><div class="empty-sub">ไม่พบรายการที่ตรงกัน</div></div>';
+  const sn=co=>getCoName(co).replace('Co., Ltd.','').replace('Co.Ltd.','').trim();
+  let rows='';
+  bsElimEntries.forEach(e=>{
+    rows+=`<tr>
+      <td style="font-size:12px">${sn(e.coFrom)} → ${sn(e.coTo)}</td>
+      <td>${e.label}</td>
+      <td>Dr. ${e.liabLabel}</td>
+      <td class="num" style="color:#e53e3e">(${fmtNum(e.amount)})</td>
+    </tr>
+    <tr>
+      <td></td><td></td>
+      <td style="padding-left:20px">Cr. ${e.astLabel}</td>
+      <td class="num" style="color:#276749">${fmtNum(e.amount)}</td>
+    </tr>`;
+  });
+  return `<div class="rt-wrap"><table class="rt"><thead><tr><th style="text-align:left">Pair</th><th style="text-align:left">Type</th><th style="text-align:left">Account</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 // ===================== MATCHING =====================
+// BS balance check pairs: astKeys[] (due from / asset side) ↔ liabKeys[] (due to / liability side)
+const BS_MATCH_MAP=[
+  {astKeys:['bs_ar'],
+   liabKeys:['bs_ap'],
+   label:'AR / AP  (Trade Receivable = Trade Payable)'},
+  {astKeys:['bs_adf_fa'],
+   liabKeys:['bs_adt_fa'],
+   label:'Amount due from — Fixed Assets = AP Fixed Assets'},
+  {astKeys:['bs_adf_div'],
+   liabKeys:['bs_adt_div'],
+   label:'Amount due from — Dividend = Amount due to — Dividend'},
+  {astKeys:['bs_adf_int'],
+   liabKeys:['bs_adt_int'],
+   label:'Interest Receivables = Accrued Interest'},
+  {astKeys:['bs_adf_other'],
+   liabKeys:['bs_adt_other'],
+   label:'Amount due from — Other = Amount due to — Other'},
+  {astKeys:['bs_loan_to'],
+   liabKeys:['bs_loan_from'],
+   label:'Loan to = Loan from'},
+  {astKeys:['bs_prepaid_mold',
+             'bs_cip_land','bs_cip_land_imp','bs_cip_bld','bs_cip_bld_imp',
+             'bs_cip_mach','bs_cip_mould','bs_cip_tools','bs_cip_elec',
+             'bs_cip_furn','bs_cip_veh'],
+   liabKeys:['bs_adt_dep'],
+   label:'Prepaid Mold + CIP = Amount due to — Deposit'},
+];
+
+// ── Matching group metadata ──
+const MATCH_GRP_META={
+  sale:    {label:'📦 SALE vs PURCHASE (Inventory)',           color:'#276749',type:'pl'},
+  mold:    {label:'🔧 MOLD — Sale / FA vs Mold-Repairing / Fixed Asset',color:'#744210',type:'pl'},
+  fa:      {label:'🏭 FIXED ASSET (Non-Mold)',                 color:'#2c3e50',type:'pl'},
+  rental:  {label:'🏠 RENTAL',                                color:'#1a56db',type:'pl'},
+  svc:     {label:'⚙️ SERVICE',                               color:'#1a56db',type:'pl'},
+  royalty: {label:'📜 ROYALTY',                               color:'#6b46c1',type:'pl'},
+  interest:{label:'💰 INTEREST',                              color:'#c05621',type:'pl'},
+  mgmt:    {label:'💼 MANAGEMENT FEE',                        color:'#7B0D0D',type:'pl'},
+  div:     {label:'💵 DIVIDEND (Received vs Paid)',            color:'#276749',type:'pl'},
+  other_pl:{label:'📂 OTHER (PL)',                            color:'#4a5568',type:'pl'},
+  bs_ar:   {label:'🏦 BS — AR / AP',                          color:'#553c9a',type:'bs'},
+  bs_adf:  {label:'🔗 BS — Amount Due From / Due To',         color:'#553c9a',type:'bs'},
+  bs_loan: {label:'💳 BS — LOAN',                             color:'#2c5282',type:'bs'},
+  bs_mold: {label:'🔧 BS — Prepaid Mold + CIP vs Deposit',    color:'#553c9a',type:'bs'},
+};
+const PL_GRP_ORDER=['sale','mold','fa','rental','svc','royalty','interest','mgmt','div','other_pl'];
+const BS_GRP_ORDER=['bs_ar','bs_adf','bs_loan','bs_mold'];
+
+function getPlGrp(revKey){
+  if(revKey==='sale_mold'||revKey==='fa_sale_mold')return 'mold';
+  if(revKey.startsWith('sale_'))return 'sale';
+  if(revKey.startsWith('fa_sale_'))return 'fa';
+  if(revKey.startsWith('oi_rental_'))return 'rental';
+  if(revKey.startsWith('oi_svc_'))return 'svc';
+  if(revKey.startsWith('oi_royalty_'))return 'royalty';
+  if(revKey.startsWith('int_income_'))return 'interest';
+  if(revKey.includes('mgmt'))return 'mgmt';
+  if(revKey.startsWith('oi_div_'))return 'div';
+  return 'other_pl';
+}
+
 function renderMatching(){
   const yr=document.getElementById('mat-year').value;
   const qt=document.getElementById('mat-quarter').value;
@@ -2035,82 +2658,275 @@ function renderMatching(){
   if(yr)data=data.filter(d=>d.year===yr);
   if(qt)data=data.filter(d=>d.quarter===qt);
 
-  const pairs=[];
+  buildMatchCoSelector(data);
+
+  const selCos=window._matchCos||[];
+  const filterPair=(a,b)=>!selCos.length||(selCos.includes(a)&&selCos.includes(b));
+
   const companies=[...new Set(data.map(d=>d.reportingCompany))];
   const matchKeys=Object.entries(ELIM_MAP);
+  const allRevFields=[...SALE_MATRIX_FIELDS,...OI_FIELDS,...INT_INCOME_FIELDS];
+  const allExpFields=[...PUR_FIELDS,...SELL_FIELDS,...ADMIN_FIELDS,...INT_EXPENSE_FIELDS,...FA_PUR_FIELDS];
+
+  const plPairs=[]; const plSummary=[]; const bsPairs=[];
 
   companies.forEach(coA=>{
     companies.forEach(coB=>{
       if(coA>=coB)return;
-      matchKeys.forEach(([revKey,expKey])=>{
-        const aRevs=data.filter(d=>d.reportingCompany===coA&&d.counterparty===coB);
-        const bExps=data.filter(d=>d.reportingCompany===coB&&d.counterparty===coA);
-        const aAmt=aRevs.reduce((s,d)=>s+(d[revKey]||0),0);
-        const bAmt=bExps.reduce((s,d)=>s+(d[expKey]||0),0);
-        if(!aAmt&&!bAmt)return;
-        const diff=Math.abs(aAmt-bAmt);
-        const status=diff===0?'matched':diff<aAmt*0.01?'matched':'unmatched';
-        pairs.push({seller:coA,buyer:coB,revKey,expKey,aAmt,bAmt,diff,status});
+      if(!filterPair(coA,coB))return;
 
-        const bRevs=data.filter(d=>d.reportingCompany===coB&&d.counterparty===coA);
-        const aExps=data.filter(d=>d.reportingCompany===coA&&d.counterparty===coB);
-        const bAmt2=bRevs.reduce((s,d)=>s+(d[revKey]||0),0);
-        const aAmt2=aExps.reduce((s,d)=>s+(d[expKey]||0),0);
-        if(!bAmt2&&!aAmt2)return;
-        const diff2=Math.abs(bAmt2-aAmt2);
-        const status2=diff2===0?'matched':diff2<bAmt2*0.01?'matched':'unmatched';
-        pairs.push({seller:coB,buyer:coA,revKey,expKey,aAmt:bAmt2,bAmt:aAmt2,diff:diff2,status:status2});
+      // --- PL 1:1 ELIM_MAP ---
+      matchKeys.forEach(([revKey,expKey])=>{
+        [[coA,coB],[coB,coA]].forEach(([seller,buyer])=>{
+          const selRows=data.filter(d=>d.reportingCompany===seller&&d.counterparty===buyer);
+          const buyRows=data.filter(d=>d.reportingCompany===buyer&&d.counterparty===seller);
+          const aAmt=selRows.reduce((s,d)=>s+(d[revKey]||0),0);
+          const bAmt=buyRows.reduce((s,d)=>s+(d[expKey]||0),0);
+          if(!aAmt&&!bAmt)return;
+          const diff=Math.abs(aAmt-bAmt);
+          plPairs.push({seller,buyer,label:ALL_LABELS[revKey]||revKey,aAmt,bAmt,diff,status:diff<0.01?'matched':'unmatched',grp:getPlGrp(revKey)});
+        });
+      });
+
+      // --- PL ELIM_MAP_MULTI ---
+      ELIM_MAP_MULTI.forEach((m,mi)=>{
+        const sumK=(rows,keys)=>rows.reduce((s,d)=>s+keys.reduce((ss,k)=>ss+(d[k]||0),0),0);
+        [[coA,coB],[coB,coA]].forEach(([seller,buyer])=>{
+          const selRows=data.filter(d=>d.reportingCompany===seller&&d.counterparty===buyer);
+          const buyRows=data.filter(d=>d.reportingCompany===buyer&&d.counterparty===seller);
+          const aAmt=sumK(selRows,m.revKeys);
+          const bAmt=sumK(buyRows,m.expKeys);
+          if(!aAmt&&!bAmt)return;
+          const diff=Math.abs(aAmt-bAmt);
+          plPairs.push({seller,buyer,label:m.label,aAmt,bAmt,diff,status:diff===0?'matched':'unmatched',multi:true,note:m.note,grp:mi===0?'mgmt':'mold'});
+        });
+      });
+
+      // PL Summary is built after all plPairs are collected (see below)
+
+      // --- BS matching ---
+      BS_MATCH_MAP.forEach((m,mi)=>{
+        const bsGrp=mi===0?'bs_ar':mi<=4?'bs_adf':mi===5?'bs_loan':'bs_mold';
+        const sumKeys=(rows,keys)=>rows.reduce((s,d)=>s+keys.reduce((ss,k)=>ss+(d[k]||0),0),0);
+        [[coA,coB],[coB,coA]].forEach(([cFrom,cTo])=>{
+          const astAmt=sumKeys(data.filter(d=>d.reportingCompany===cFrom&&d.counterparty===cTo),m.astKeys);
+          const liabAmt=sumKeys(data.filter(d=>d.reportingCompany===cTo&&d.counterparty===cFrom),m.liabKeys);
+          if(!astAmt&&!liabAmt)return;
+          const diff=Math.abs(astAmt-liabAmt);
+          bsPairs.push({coFrom:cFrom,coTo:cTo,label:m.label,astAmt,liabAmt,diff,status:diff===0?'matched':'unmatched',grp:bsGrp});
+        });
       });
     });
   });
 
-  const matched=pairs.filter(p=>p.status==='matched').length;
-  const unmatched=pairs.filter(p=>p.status==='unmatched').length;
-  const totalElim=pairs.filter(p=>p.status==='matched').reduce((s,p)=>s+p.aAmt,0);
+  // Build PL Summary from plPairs (only matching-eligible items per company pair)
+  const plSummaryMap=new Map();
+  plPairs.forEach(p=>{
+    const key=`${p.seller}→${p.buyer}`;
+    if(!plSummaryMap.has(key))plSummaryMap.set(key,{seller:p.seller,buyer:p.buyer,sellerSum:0,buyerSum:0});
+    const e=plSummaryMap.get(key);
+    e.sellerSum+=p.aAmt;
+    e.buyerSum+=p.bAmt;
+  });
+  plSummaryMap.forEach(e=>{
+    const diff=Math.abs(e.sellerSum-e.buyerSum);
+    plSummary.push({seller:e.seller,buyer:e.buyer,totalSales:e.sellerSum,totalExp:e.buyerSum,diff,status:diff<0.01?'matched':'unmatched'});
+  });
+
+  const plMatched=plPairs.filter(p=>p.status==='matched').length;
+  const plUnmatched=plPairs.filter(p=>p.status==='unmatched').length;
+  const bsMatched=bsPairs.filter(p=>p.status==='matched').length;
+  const bsUnmatched=bsPairs.filter(p=>p.status==='unmatched').length;
+  const totalElim=plPairs.filter(p=>p.status==='matched').reduce((s,p)=>s+p.aAmt,0);
 
   document.getElementById('matching-kpi').innerHTML=`
-    <div class="kpi g"><div class="kpi-lbl">Matched</div><div class="kpi-val">${matched}</div><div class="kpi-sub">รายการที่ตรงกัน</div></div>
-    <div class="kpi r"><div class="kpi-lbl">Unmatched</div><div class="kpi-val">${unmatched}</div><div class="kpi-sub">รายการที่ไม่ตรง</div></div>
-    <div class="kpi"><div class="kpi-lbl">Total Eliminated</div><div class="kpi-val">${fmtNum(totalElim)}</div><div class="kpi-sub">บาท</div></div>
-    <div class="kpi o"><div class="kpi-lbl">Total Pairs</div><div class="kpi-val">${pairs.length}</div><div class="kpi-sub">คู่รายการทั้งหมด</div></div>`;
+    <div class="kpi" style="border-top:3px solid #276749"><div class="kpi-lbl">PL Matched</div><div class="kpi-val" style="color:#276749">${plMatched}</div><div class="kpi-sub">รายการ PL ตรงกัน</div></div>
+    <div class="kpi" style="border-top:3px solid #e53e3e"><div class="kpi-lbl">PL Unmatched</div><div class="kpi-val" style="color:#e53e3e">${plUnmatched}</div><div class="kpi-sub">รายการ PL ไม่ตรง</div></div>
+    <div class="kpi" style="border-top:3px solid #553c9a"><div class="kpi-lbl">BS Matched</div><div class="kpi-val" style="color:#553c9a">${bsMatched}</div><div class="kpi-sub">รายการ BS ตรงกัน</div></div>
+    <div class="kpi" style="border-top:3px solid #e53e3e"><div class="kpi-lbl">BS Unmatched</div><div class="kpi-val" style="color:#e53e3e">${bsUnmatched}</div><div class="kpi-sub">รายการ BS ไม่ตรง</div></div>
+    <div class="kpi" style="border-top:3px solid #C0392B"><div class="kpi-lbl">Total Eliminated</div><div class="kpi-val">${fmtNum(totalElim)}</div><div class="kpi-sub">บาท</div></div>`;
 
-  if(!pairs.length){
+  if(!plPairs.length&&!bsPairs.length){
     document.getElementById('matching-content').innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">ไม่พบข้อมูล</div><div class="empty-sub">ต้องมีข้อมูลอย่างน้อย 2 บริษัทในช่วงเวลาเดียวกัน</div></div>';
     return;
   }
 
-  let rows='';
-  pairs.forEach(p=>{
-    const rowCls=p.status==='matched'?'match-row-matched':'match-row-unmatched';
-    const bCls=p.status==='matched'?'b-matched':'b-unmatched';
-    const bLabel=p.status==='matched'?'Matched':'Unmatched';
-    rows+=`<tr class="${rowCls}">
-      <td>${getCoName(p.seller).replace('Co., Ltd.','').trim()}</td>
-      <td>${getCoName(p.buyer).replace('Co., Ltd.','').trim()}</td>
-      <td>${ALL_LABELS[p.revKey]||p.revKey}</td>
-      <td class="num">${fmtNum(p.aAmt)}</td>
-      <td class="num">${fmtNum(p.bAmt)}</td>
+  const bCls=s=>s==='matched'?'b-matched':'b-unmatched';
+  const bLbl=s=>s==='matched'?'✓ Matched':'✗ Unmatched';
+  const rowCls=s=>s==='matched'?'match-row-matched':'match-row-unmatched';
+  const sn=co=>getCoName(co).replace('Co., Ltd.','').replace('Co.Ltd.','').trim();
+
+  function mkGrpSection(grpId,pairs,type){
+    const meta=MATCH_GRP_META[grpId];
+    if(!pairs.length)return '';
+    const matchCnt=pairs.filter(p=>p.status==='matched').length;
+    const unmatchCnt=pairs.filter(p=>p.status==='unmatched').length;
+    let rows='';
+    if(type==='pl'){
+      pairs.forEach(p=>{
+        rows+=`<tr class="${rowCls(p.status)}">
+          <td style="white-space:nowrap">${sn(p.seller)}</td>
+          <td style="white-space:nowrap">${sn(p.buyer)}</td>
+          <td>${p.label}${p.note?`<br><span style="font-size:10px;color:#888">${p.note}</span>`:''}</td>
+          <td class="num">${fmtNum(p.aAmt)}</td>
+          <td class="num">${fmtNum(p.bAmt)}</td>
+          <td class="num ${p.diff?'diff-text':''}">${p.diff?fmtNum(p.diff):'-'}</td>
+          <td><span class="badge ${bCls(p.status)}">${bLbl(p.status)}</span></td>
+        </tr>`;
+      });
+    } else {
+      pairs.forEach(p=>{
+        rows+=`<tr class="${rowCls(p.status)}">
+          <td style="white-space:nowrap">${sn(p.coFrom)}</td>
+          <td style="white-space:nowrap">${sn(p.coTo)}</td>
+          <td>${p.label}</td>
+          <td class="num">${fmtNum(p.astAmt)}</td>
+          <td class="num">${fmtNum(p.liabAmt)}</td>
+          <td class="num ${p.diff?'diff-text':''}">${p.diff?fmtNum(p.diff):'-'}</td>
+          <td><span class="badge ${bCls(p.status)}">${bLbl(p.status)}</span></td>
+        </tr>`;
+      });
+    }
+    const th=type==='pl'
+      ?`<th style="text-align:left">Seller</th><th style="text-align:left">Buyer</th><th style="text-align:left">Transaction</th><th>Seller Amt</th><th>Buyer Amt</th><th>Diff</th><th>Status</th>`
+      :`<th style="text-align:left">Asset Side</th><th style="text-align:left">Liability Side</th><th style="text-align:left">Type</th><th>Due From</th><th>Due To</th><th>Diff</th><th>Status</th>`;
+    const pillPl=`<span style="background:rgba(255,255,255,.25);padding:2px 7px;border-radius:10px;font-size:11px">${matchCnt} ✓</span>`;
+    const pillUn=unmatchCnt?`<span style="background:#fed7d7;color:#742a2a;padding:2px 7px;border-radius:10px;font-size:11px;margin-left:4px">${unmatchCnt} ✗</span>`:'';
+    const bsTag=type==='bs'?`<span style="background:rgba(255,255,255,.18);font-size:10px;padding:1px 6px;border-radius:6px;margin-left:6px;letter-spacing:.5px">BS</span>`:'';
+    return `<div class="msec-wrap">
+      <div class="msec-hdr ${type==='bs'?'bs-hdr':''}" style="background:${meta.color}" onclick="toggleMatchSec('${grpId}')">
+        <span>${meta.label}${bsTag}</span>
+        <span style="display:flex;align-items:center;gap:4px">${pillPl}${pillUn}<span id="msec-arr-${grpId}" style="margin-left:6px">▼</span></span>
+      </div>
+      <div class="msec-body" id="msec-body-${grpId}">
+        <div class="rt-wrap" style="margin-top:0">
+          <table class="rt"><thead><tr>${th}</tr></thead>
+          <tbody>${rows}</tbody></table>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ── PL Summary section ──
+  let sumRows='';
+  plSummary.forEach(p=>{
+    sumRows+=`<tr class="${rowCls(p.status)}">
+      <td style="white-space:nowrap">${sn(p.seller)}</td><td style="white-space:nowrap">${sn(p.buyer)}</td>
+      <td class="num">${fmtNum(p.totalSales)}</td><td class="num">${fmtNum(p.totalExp)}</td>
       <td class="num ${p.diff?'diff-text':''}">${p.diff?fmtNum(p.diff):'-'}</td>
-      <td><span class="badge ${bCls}">${bLabel}</span></td>
+      <td><span class="badge ${bCls(p.status)}">${bLbl(p.status)}</span></td>
     </tr>`;
   });
 
-  document.getElementById('matching-content').innerHTML=`
-    <div class="rt-wrap"><table class="rt" id="mat-table">
-      <thead><tr>
-        <th style="text-align:left">Seller</th>
-        <th style="text-align:left">Buyer</th>
-        <th style="text-align:left">Transaction Type</th>
-        <th>Seller Amount</th>
-        <th>Buyer Amount</th>
-        <th>Difference</th>
-        <th style="text-align:left">Status</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>`;
+  const plSumHtml=`<div class="msec-wrap" style="margin-bottom:10px">
+    <div class="msec-hdr" style="background:#C0392B" onclick="toggleMatchSec('sum')">
+      <span>📊 PL SUMMARY — ยอดรวมต่อคู่บริษัท</span>
+      <span id="msec-arr-sum">▼</span>
+    </div>
+    <div class="msec-body" id="msec-body-sum">
+      <div class="rt-wrap" style="margin-top:0"><table class="rt" id="mat-table">
+        <thead><tr><th style="text-align:left">Seller</th><th style="text-align:left">Buyer</th><th>Total Sales</th><th>Total Expense</th><th>Difference</th><th>Status</th></tr></thead>
+        <tbody>${sumRows||'<tr><td colspan="6" style="text-align:center;color:#a0aec0;padding:12px">ไม่พบข้อมูล</td></tr>'}</tbody>
+      </table></div>
+    </div>
+  </div>`;
+
+  // ── PL detail groups ──
+  const plHtml=PL_GRP_ORDER.map(grpId=>mkGrpSection(grpId,plPairs.filter(p=>p.grp===grpId),'pl')).join('');
+
+  // ── BS separator ──
+  const bsDivider=`<div style="margin:18px 0 10px;padding:8px 14px;background:#f0ebff;border-left:4px solid #553c9a;border-radius:0 6px 6px 0;font-size:13px;font-weight:700;color:#553c9a">
+    🏦 BALANCE SHEET MATCHING
+  </div>`;
+
+  // ── BS groups ──
+  const bsHtml=BS_GRP_ORDER.map(grpId=>mkGrpSection(grpId,bsPairs.filter(p=>p.grp===grpId),'bs')).join('');
+
+  document.getElementById('matching-content').innerHTML=plSumHtml+plHtml+bsDivider+bsHtml;
+}
+
+function toggleMatchSec(id){
+  const body=document.getElementById(`msec-body-${id}`);
+  const arr=document.getElementById(`msec-arr-${id}`);
+  if(!body)return;
+  const hide=body.style.display!=='none';
+  body.style.display=hide?'none':'block';
+  if(arr)arr.textContent=hide?'▶':'▼';
+}
+
+function buildMatchCoSelector(data){
+  if(!window._matchCos)window._matchCos=[];
+  const submittedCos=new Set(data.map(d=>d.reportingCompany));
+  const GRPS=[
+    {key:'parent',label:'Parent'},
+    {key:'subsidiary',label:'Subsidiaries'},
+    {key:'associateLocal',label:'Associates (Local)'},
+    {key:'associateForeign',label:'Associates (Foreign)'},
+    {key:'other',label:'Other Related'},
+  ];
+  let html='';
+  GRPS.forEach(g=>{
+    const cos=(COMPANIES[g.key]||[]).filter(c=>submittedCos.has(c.id));
+    if(!cos.length)return;
+    const allSel=cos.every(c=>window._matchCos.includes(c.id));
+    html+=`<div style="margin-bottom:10px">
+      <div class="glbl" style="margin-bottom:6px">
+        ${g.label}
+        <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 7px;margin-left:6px" onclick="toggleMatchGrpSel('${g.key}')">${allSel?'ยกเลิกทั้งกลุ่ม':'เลือกทั้งกลุ่ม'}</button>
+      </div>
+      <div class="match-co-grid">
+        ${cos.map(c=>{
+          const sel=window._matchCos.includes(c.id);
+          return `<div class="match-co-chip ${sel?'sel':''}" id="match-chip-${c.id}" onclick="toggleMatchCo('${c.id}')">
+            <div class="match-co-chk">${sel?'✓':''}</div>
+            <span>${getCoName(c.id).replace('Co., Ltd.','').replace('Co.Ltd.','').trim()}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+  document.getElementById('match-co-body').innerHTML=html||'<div style="color:#a0aec0;font-size:13px">ยังไม่มีข้อมูลที่ Submit</div>';
+}
+
+function toggleMatchCo(id){
+  if(!window._matchCos)window._matchCos=[];
+  const idx=window._matchCos.indexOf(id);
+  if(idx>=0)window._matchCos.splice(idx,1); else window._matchCos.push(id);
+  renderMatching();
+}
+
+function toggleMatchGrpSel(grpKey){
+  if(!window._matchCos)window._matchCos=[];
+  const data=loadData();
+  const submitted=new Set(data.map(d=>d.reportingCompany));
+  const ids=(COMPANIES[grpKey]||[]).filter(c=>submitted.has(c.id)).map(c=>c.id);
+  const allSel=ids.every(id=>window._matchCos.includes(id));
+  if(allSel){ids.forEach(id=>{const i=window._matchCos.indexOf(id);if(i>=0)window._matchCos.splice(i,1)});}
+  else ids.forEach(id=>{if(!window._matchCos.includes(id))window._matchCos.push(id);});
+  renderMatching();
+}
+
+function selectAllMatchCos(){
+  window._matchCos=[...new Set(loadData().map(d=>d.reportingCompany))];
+  renderMatching();
+}
+
+function clearMatchCos(){
+  window._matchCos=[];
+  renderMatching();
 }
 
 // ===================== DASHBOARD =====================
+window._dashCache=null;
+window._dashOpenCo=null;
+
+function switchDashTab(tab){
+  ['bu','status'].forEach(t=>{
+    document.getElementById(`dash-tab-btn-${t}`).classList.toggle('act',t===tab);
+    document.getElementById(`dash-tab-${t}`).style.display=t===tab?'block':'none';
+  });
+}
+
 function renderDashboard(){
   const yr=document.getElementById('dash-year').value;
   const qt=document.getElementById('dash-quarter').value;
@@ -2118,47 +2934,151 @@ function renderDashboard(){
   if(yr)data=data.filter(d=>d.year===yr);
   if(qt)data=data.filter(d=>d.quarter===qt);
 
-  const submitted=data.filter(d=>d.status!=='draft').length;
-  const approved=data.filter(d=>d.status==='approved').length;
-  const companies=[...new Set(data.map(d=>d.reportingCompany))].length;
   const allRevFields=[...SALE_MATRIX_FIELDS,...OI_FIELDS,...INT_INCOME_FIELDS];
   const allExpFields=[...PUR_FIELDS,...SELL_FIELDS,...ADMIN_FIELDS,...INT_EXPENSE_FIELDS,...FA_PUR_FIELDS];
-  const totalRev=data.reduce((s,d)=>s+allRevFields.reduce((ss,f)=>{const v=d[f.key]||0;return (f.rowKey==='cost'||f.rowKey==='fa_cost')?ss-v:ss+v;},0),0);
-  const totalExp=data.reduce((s,d)=>s+allExpFields.reduce((ss,f)=>ss+(d[f.key]||0),0),0);
+  const calcRev=(rows)=>rows.reduce((s,d)=>s+allRevFields.reduce((ss,f)=>{const v=d[f.key]||0;return (f.rowKey==='cost'||f.rowKey==='fa_cost')?ss-v:ss+v;},0),0);
+  const calcExp=(rows)=>rows.reduce((s,d)=>s+allExpFields.reduce((ss,f)=>ss+(d[f.key]||0),0),0);
+  const sn=co=>getCoName(co).replace('Co., Ltd.','').replace('Co.Ltd.','').trim();
 
+  const submitted=data.filter(d=>d.status!=='draft').length;
+  const approved=data.filter(d=>d.status==='approved').length;
+  const coList=[...new Set(data.map(d=>d.reportingCompany))];
+  const totalRev=calcRev(data);
+  const totalExp=calcExp(data);
+  const netPos=totalRev-totalExp;
+
+  window._dashCache={data,allRevFields,allExpFields,calcRev,calcExp};
+  window._dashOpenCo=null;
+
+  // ── KPI ──
   document.getElementById('dash-kpi').innerHTML=`
-    <div class="kpi"><div class="kpi-lbl">Total Revenue</div><div class="kpi-val">${fmtNum(totalRev)}</div><div class="kpi-sub">บาท</div></div>
-    <div class="kpi g"><div class="kpi-lbl">Total Expense</div><div class="kpi-val">${fmtNum(totalExp)}</div><div class="kpi-sub">บาท</div></div>
-    <div class="kpi o"><div class="kpi-lbl">Companies Reporting</div><div class="kpi-val">${companies}</div><div class="kpi-sub">บริษัท</div></div>
+    <div class="kpi"><div class="kpi-lbl">Revenue รวม</div><div class="kpi-val">${fmtNum(totalRev)}</div><div class="kpi-sub">บาท</div></div>
+    <div class="kpi g"><div class="kpi-lbl">Expense รวม</div><div class="kpi-val">${fmtNum(totalExp)}</div><div class="kpi-sub">บาท</div></div>
+    <div class="kpi ${netPos>=0?'':'r'}"><div class="kpi-lbl">Net (Rev − Exp)</div><div class="kpi-val">${fmtNum(netPos)}</div><div class="kpi-sub">บาท</div></div>
+    <div class="kpi o"><div class="kpi-lbl">บริษัทที่รายงาน</div><div class="kpi-val">${coList.length}</div><div class="kpi-sub">บริษัท</div></div>
     <div class="kpi p"><div class="kpi-lbl">Submitted</div><div class="kpi-val">${submitted}</div><div class="kpi-sub">รายการ</div></div>
-    <div class="kpi r"><div class="kpi-lbl">Approved</div><div class="kpi-val">${approved}</div><div class="kpi-sub">รายการ</div></div>`;
+    <div class="kpi ${approved===submitted&&submitted>0?'g':'r'}"><div class="kpi-lbl">Approved</div><div class="kpi-val">${approved}</div><div class="kpi-sub">/ ${submitted} รายการ</div></div>`;
 
-  // Revenue by company chart (bar using CSS)
-  const coRevs={};
-  data.forEach(d=>{
-    coRevs[d.reportingCompany]=(coRevs[d.reportingCompany]||0)+allRevFields.reduce((s,f)=>s+(d[f.key]||0),0);
-  });
-  const maxRev=Math.max(...Object.values(coRevs),1);
-  let revChart='';
-  Object.entries(coRevs).sort((a,b)=>b[1]-a[1]).slice(0,8).forEach(([co,v])=>{
-    const pct=Math.round(v/maxRev*100);
-    const shortName=getCoName(co).replace('Co., Ltd.','').replace('Co.Ltd.','').trim().slice(0,30);
-    revChart+=`<div style="margin-bottom:8px"><div style="font-size:11px;color:#4a5568;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${shortName}</div><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;background:#e2e8f0;border-radius:99px;height:12px;overflow:hidden"><div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#2b6cb0,#4299e1);border-radius:99px"></div></div><div style="font-size:11px;font-weight:700;width:80px;text-align:right">${fmtNum(v)}</div></div></div>`;
-  });
-  document.getElementById('dash-rev-chart').innerHTML=revChart||'<div class="empty"><div class="empty-sub">ไม่มีข้อมูล</div></div>';
+  // ── Company Summary Table (left panel) ──
+  const maxRev=Math.max(...coList.map(co=>calcRev(data.filter(d=>d.reportingCompany===co))),1);
+  let coRows='';
+  const coStats=coList.map(co=>{
+    const rows=data.filter(d=>d.reportingCompany===co);
+    const rev=calcRev(rows); const exp=calcExp(rows);
+    return {co,rev,exp,net:rev-exp,cps:[...new Set(rows.map(d=>d.counterparty))]};
+  }).sort((a,b)=>b.rev-a.rev);
 
-  const coExps={};
-  data.forEach(d=>{
-    coExps[d.reportingCompany]=(coExps[d.reportingCompany]||0)+allExpFields.reduce((s,f)=>s+(d[f.key]||0),0);
+  coStats.forEach(s=>{
+    const revPct=Math.round(Math.max(s.rev,0)/maxRev*100);
+    const expPct=Math.round(Math.max(s.exp,0)/maxRev*100);
+    const netCol=s.net>=0?'#276749':'#C0392B';
+    coRows+=`<tr id="dash-co-row-${s.co}" onclick="toggleCoDrill('${s.co}')"
+      style="cursor:pointer;transition:background .15s"
+      onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background=''">
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="dash-card-arrow-${s.co}" style="font-size:11px;color:#7B0D0D;transition:transform .2s;display:inline-block">▶</span>
+          <div>
+            <div style="font-weight:700;font-size:12px;color:#1a202c">${sn(s.co)}</div>
+            <div style="font-size:10px;color:#a0aec0">${s.cps.length} คู่รายการ</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:80px;background:#e2e8f0;border-radius:99px;height:7px;overflow:hidden">
+            <div style="width:${revPct}%;height:100%;background:#7B0D0D;border-radius:99px"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:#7B0D0D;min-width:72px;text-align:right">${fmtNum(s.rev)}</span>
+        </div>
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:80px;background:#e2e8f0;border-radius:99px;height:7px;overflow:hidden">
+            <div style="width:${expPct}%;height:100%;background:#2b6cb0;border-radius:99px"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:#2b6cb0;min-width:72px;text-align:right">${fmtNum(s.exp)}</span>
+        </div>
+      </td>
+      <td style="font-weight:700;font-size:12px;text-align:right;color:${netCol}">${fmtNum(s.net)}</td>
+    </tr>`;
   });
-  const maxExp=Math.max(...Object.values(coExps),1);
-  let expChart='';
-  Object.entries(coExps).sort((a,b)=>b[1]-a[1]).slice(0,8).forEach(([co,v])=>{
-    const pct=Math.round(v/maxExp*100);
-    const shortName=getCoName(co).replace('Co., Ltd.','').replace('Co.Ltd.','').trim().slice(0,30);
-    expChart+=`<div style="margin-bottom:8px"><div style="font-size:11px;color:#4a5568;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${shortName}</div><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;background:#e2e8f0;border-radius:99px;height:12px;overflow:hidden"><div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#276749,#48bb78);border-radius:99px"></div></div><div style="font-size:11px;font-weight:700;width:80px;text-align:right">${fmtNum(v)}</div></div></div>`;
+
+  const coTblEmpty='<div class="empty"><div class="empty-sub">ไม่มีข้อมูล</div></div>';
+  document.getElementById('dash-co-table').innerHTML = coRows
+    ? `<table class="rt" id="dash-co-tbl" style="width:100%">
+        <thead><tr>
+          <th style="text-align:left">บริษัท</th>
+          <th style="text-align:left">Revenue <span style="font-weight:400;color:#fed7d7">▬</span></th>
+          <th style="text-align:left">Expense <span style="font-weight:400;color:#bee3f8">▬</span></th>
+          <th style="text-align:right">Net</th>
+        </tr></thead>
+        <tbody>${coRows}</tbody>
+        <tfoot><tr style="background:#7B0D0D">
+          <td style="color:#fff;font-weight:700">รวมทั้งหมด</td>
+          <td style="color:#fff;font-weight:700;text-align:right">${fmtNum(totalRev)}</td>
+          <td style="color:#fff;font-weight:700;text-align:right">${fmtNum(totalExp)}</td>
+          <td style="color:#fff;font-weight:700;text-align:right">${fmtNum(netPos)}</td>
+        </tr></tfoot>
+      </table>` : coTblEmpty;
+
+  // ── Intercompany Flow Table (right panel) ──
+  const flowPairs=[];
+  const allCos2=[...new Set([...data.map(d=>d.reportingCompany),...data.map(d=>d.counterparty)])];
+  allCos2.forEach(seller=>{
+    allCos2.forEach(buyer=>{
+      if(seller===buyer)return;
+      const rows=data.filter(d=>d.reportingCompany===seller&&d.counterparty===buyer);
+      if(!rows.length)return;
+      const rev=calcRev(rows);
+      const exp=calcExp(rows);
+      if(!rev&&!exp)return;
+      flowPairs.push({seller,buyer,rev,exp});
+    });
   });
-  document.getElementById('dash-exp-chart').innerHTML=expChart||'<div class="empty"><div class="empty-sub">ไม่มีข้อมูล</div></div>';
+  flowPairs.sort((a,b)=>b.rev-a.rev);
+  const grandFlowRev=flowPairs.reduce((s,p)=>s+Math.max(p.rev,0),0)||1;
+
+  let flowRows='';
+  flowPairs.forEach((p,i)=>{
+    const pct=Math.round(Math.max(p.rev,0)/grandFlowRev*100);
+    const rankColor=i===0?'#7B0D0D':i===1?'#C0392B':i===2?'#e07b54':'#718096';
+    flowRows+=`<tr>
+      <td style="padding:6px 8px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:11px;font-weight:700;color:${rankColor};min-width:18px">${i+1}</span>
+          <div style="font-size:12px">
+            <span style="font-weight:700">${sn(p.seller)}</span>
+            <span style="color:#a0aec0;margin:0 4px">→</span>
+            <span>${sn(p.buyer)}</span>
+          </div>
+        </div>
+      </td>
+      <td style="padding:6px 8px">
+        <div style="display:flex;align-items:center;gap:5px">
+          <div style="width:60px;background:#e2e8f0;border-radius:99px;height:6px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:#7B0D0D;border-radius:99px"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:#7B0D0D">${fmtNum(p.rev)}</span>
+        </div>
+        <div style="font-size:10px;color:#a0aec0;margin-top:2px">Exp: ${fmtNum(p.exp)} &nbsp;|&nbsp; ${pct}% of total</div>
+      </td>
+    </tr>`;
+  });
+
+  document.getElementById('dash-flow-table').innerHTML = flowRows
+    ? `<table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="background:#7B0D0D;color:#fff;font-size:11px;padding:6px 8px;text-align:left;border-radius:6px 0 0 0">บริษัทขาย → บริษัทซื้อ</th>
+          <th style="background:#7B0D0D;color:#fff;font-size:11px;padding:6px 8px;text-align:left;border-radius:0 6px 0 0">ยอด Revenue + สัดส่วน</th>
+        </tr></thead>
+        <tbody>${flowRows}</tbody>
+      </table>`
+    : '<div class="empty"><div class="empty-sub">ต้องมีข้อมูลอย่างน้อย 2 บริษัท</div></div>';
+
+  // Reset drill-down
+  const det=document.getElementById('dash-co-detail');
+  if(det) det.style.display='none';
 
   // Status table
   const groups={};
@@ -2181,6 +3101,125 @@ function renderDashboard(){
     </tr>`;
   }).join('');
   document.getElementById('dash-status-table').innerHTML=stRows?`<div class="rt-wrap"><table class="rt"><thead><tr><th style="text-align:left">Company</th><th style="text-align:left">Period</th><th>Total Entries</th><th>Submitted</th><th>Approved</th><th>Progress</th></tr></thead><tbody>${stRows}</tbody></table></div>`:'<div class="empty"><div class="empty-sub">ไม่มีข้อมูล</div></div>';
+
+  // BU Breakdown table
+  const BU_LIST=['plastic','melamine','beverage','mold'];
+  const BU_LABELS={plastic:'Plastic 🧴',melamine:'Melamine 🍽️',beverage:'Beverage 🧃',mold:'Mold 🔧'};
+  // Row definitions: label, function to sum for a BU
+  const buRowDefs=[
+    {label:'Sale',          fn:(d,p)=>SALE_MATRIX_FIELDS.filter(f=>f.rowKey==='sale'&&f.product===p).reduce((s,f)=>s+(d[f.key]||0),0)},
+    {label:'Cost of Sale',  fn:(d,p)=>SALE_MATRIX_FIELDS.filter(f=>f.rowKey==='cost'&&f.product===p).reduce((s,f)=>s+(d[f.key]||0),0)},
+    {label:'FA Sale',       fn:(d,p)=>SALE_MATRIX_FIELDS.filter(f=>f.rowKey==='fa_sale'&&f.product===p).reduce((s,f)=>s+(d[f.key]||0),0)},
+    {label:'Net Revenue',   fn:(d,p)=>{
+      const sale=SALE_MATRIX_FIELDS.filter(f=>f.rowKey==='sale'&&f.product===p).reduce((s,f)=>s+(d[f.key]||0),0);
+      const cost=SALE_MATRIX_FIELDS.filter(f=>f.rowKey==='cost'&&f.product===p).reduce((s,f)=>s+(d[f.key]||0),0);
+      const fas=SALE_MATRIX_FIELDS.filter(f=>f.rowKey==='fa_sale'&&f.product===p).reduce((s,f)=>s+(d[f.key]||0),0);
+      const fac=SALE_MATRIX_FIELDS.filter(f=>f.rowKey==='fa_cost'&&f.product===p).reduce((s,f)=>s+(d[f.key]||0),0);
+      return sale-cost+fas-fac;
+    },isTot:true},
+    {label:'Purchase',      fn:(d,p)=>PUR_FIELDS.filter(f=>f.product===p).reduce((s,f)=>s+(d[f.key]||0),0)},
+    {label:'Selling Exp.',  fn:(d,p)=>SELL_FIELDS.filter(f=>f.product===p).reduce((s,f)=>s+(d[f.key]||0),0)},
+    {label:'Admin Exp.',    fn:(d,p)=>ADMIN_FIELDS.filter(f=>f.product===p).reduce((s,f)=>s+(d[f.key]||0),0)},
+    {label:'Intst. Income', fn:(d,p)=>INT_INCOME_FIELDS.filter(f=>f.product===p).reduce((s,f)=>s+(d[f.key]||0),0)},
+    {label:'Intst. Expense',fn:(d,p)=>INT_EXPENSE_FIELDS.filter(f=>f.product===p).reduce((s,f)=>s+(d[f.key]||0),0)},
+    {label:'FA Purchase',   fn:(d,p)=>FA_PUR_FIELDS.filter(f=>f.product===p).reduce((s,f)=>s+(d[f.key]||0),0)},
+  ];
+  // Aggregate per BU
+  const buTotals={};
+  BU_LIST.forEach(p=>{buTotals[p]={};buRowDefs.forEach(r=>{buTotals[p][r.label]=data.reduce((s,d)=>s+r.fn(d,p),0);});});
+  const buAllRows=buRowDefs.map(r=>{
+    const vals=BU_LIST.map(p=>buTotals[p][r.label]);
+    const tot=vals.reduce((a,b)=>a+b,0);
+    if(!tot&&!r.isTot)return '';
+    const rowStyle=r.isTot?'background:#f0f4ff;font-weight:700':'';
+    return `<tr style="${rowStyle}"><td style="padding-left:10px">${r.label}</td>${vals.map(v=>`<td class="${v<0?'num-neg':v>0?'num-pos':'zero'}">${fmtNum(v)}</td>`).join('')}<td style="font-weight:700">${fmtNum(tot)}</td></tr>`;
+  }).join('');
+  const buColHdr=BU_LIST.map(p=>`<th style="background:#2b6cb0">${BU_LABELS[p]}</th>`).join('');
+  document.getElementById('dash-bu-table').innerHTML=buAllRows
+    ?`<div class="rt-wrap"><table class="rt"><thead><tr><th style="text-align:left">รายการ / Item</th>${buColHdr}<th style="background:#274c77">Total</th></tr></thead><tbody>${buAllRows}</tbody></table></div>`
+    :'<div class="empty"><div class="empty-sub">ไม่มีข้อมูล</div></div>';
+}
+
+// ── Company Drill-down (click table row) ──
+function toggleCoDrill(co){
+  const cache=window._dashCache;
+  const detail=document.getElementById('dash-co-detail');
+  const arrow=document.getElementById(`dash-card-arrow-${co}`);
+  const row=document.getElementById(`dash-co-row-${co}`);
+
+  // Close if same row clicked again
+  if(window._dashOpenCo===co){
+    detail.style.display='none';
+    if(arrow){arrow.textContent='▶';arrow.style.transform='';}
+    if(row) row.style.background='';
+    window._dashOpenCo=null;
+    return;
+  }
+  // Reset previous selection
+  if(window._dashOpenCo){
+    const prevArrow=document.getElementById(`dash-card-arrow-${window._dashOpenCo}`);
+    const prevRow=document.getElementById(`dash-co-row-${window._dashOpenCo}`);
+    if(prevArrow){prevArrow.textContent='▶';prevArrow.style.transform='';}
+    if(prevRow) prevRow.style.background='';
+  }
+  window._dashOpenCo=co;
+  if(arrow){arrow.textContent='▼';arrow.style.color='#7B0D0D';}
+  if(row) row.style.background='#fef2f2';
+
+  if(!cache){detail.style.display='none';return;}
+  const {data,calcRev,calcExp}=cache;
+  const coRows=data.filter(d=>d.reportingCompany===co);
+  const cps=[...new Set(coRows.map(d=>d.counterparty))];
+  const coName=getCoName(co).replace('Co., Ltd.','').replace('Co.Ltd.','').trim();
+  const totalRev=calcRev(coRows);
+  const totalExp=calcExp(coRows);
+  const maxCpRev=Math.max(...cps.map(cp=>calcRev(coRows.filter(d=>d.counterparty===cp))),1);
+
+  let cpRows='';
+  [...cps].sort((a,b)=>calcRev(coRows.filter(d=>d.counterparty===b))-calcRev(coRows.filter(d=>d.counterparty===a))).forEach(cp=>{
+    const cpData=coRows.filter(d=>d.counterparty===cp);
+    const rev=calcRev(cpData);
+    const exp=calcExp(cpData);
+    const net=rev-exp;
+    const revPct=totalRev?Math.round(Math.max(rev,0)/totalRev*100):0;
+    const barW=Math.round(Math.max(rev,0)/maxCpRev*100);
+    const netCol=net>=0?'#276749':'#C0392B';
+    const cpName=getCoName(cp).replace('Co., Ltd.','').replace('Co.Ltd.','').trim();
+    cpRows+=`<tr>
+      <td style="font-weight:600;font-size:12px">${cpName}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:100px;background:#e2e8f0;border-radius:99px;height:7px;overflow:hidden">
+            <div style="width:${barW}%;height:100%;background:#7B0D0D;border-radius:99px"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:#7B0D0D">${fmtNum(rev)}</span>
+          <span style="font-size:10px;color:#a0aec0">(${revPct}%)</span>
+        </div>
+      </td>
+      <td class="num" style="font-size:12px;color:#2b6cb0">${fmtNum(exp)}</td>
+      <td class="num" style="font-weight:700;font-size:12px;color:${netCol}">${fmtNum(net)}</td>
+    </tr>`;
+  });
+  cpRows+=`<tr class="rt-gtot"><td>รวม</td><td class="num">${fmtNum(totalRev)}</td><td class="num">${fmtNum(totalExp)}</td><td class="num">${fmtNum(totalRev-totalExp)}</td></tr>`;
+
+  detail.innerHTML=`
+    <div style="background:#7B0D0D;color:#fff;font-weight:700;font-size:13px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+      <span>📊 ${coName} — การค้ากับแต่ละคู่รายการ</span>
+      <span onclick="toggleCoDrill('${co}')" style="cursor:pointer;font-size:18px;line-height:1;opacity:.8;padding:0 4px">✕</span>
+    </div>
+    <div style="padding:14px 16px">
+      <table class="rt" style="width:100%">
+        <thead><tr>
+          <th style="text-align:left">Counterparty</th>
+          <th style="text-align:left">Revenue (สัดส่วน)</th>
+          <th>Expense</th>
+          <th>Net</th>
+        </tr></thead>
+        <tbody>${cpRows}</tbody>
+      </table>
+    </div>`;
+  detail.style.display='block';
+  detail.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 // ===================== TAB SWITCH =====================
