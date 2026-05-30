@@ -527,31 +527,35 @@ hr.sep{border:none;border-top:1px solid #e2e8f0;margin:16px 0}
 // ===================== AUTH CONFIG =====================
 // แก้ไข Company / Password ได้ที่นี่
 const AUTH_USERS = {
-  // --- Admin: Srithai Superware (Public) Co., Ltd. — เห็นข้อมูลทั้งหมด ---
-  'sts':    {password:'0505', role:'admin', company:'STS',   label:'Srithai Superware (Public)'},
-  // --- Company Users (กรอกข้อมูลบริษัทตัวเอง) --- รหัสเรียงตามลำดับจาก 0002
-  'stm':    {password:'0002', role:'user', company:'STM',   label:'Srithai Moulds'},
-  'stmy':   {password:'0003', role:'user', company:'STMY',  label:'Srithai Miyagawa'},
-  'ttp':    {password:'0004', role:'user', company:'TTP',   label:'T Thaiplass'},
-  'stsk':   {password:'0005', role:'user', company:'STSK',  label:'Srithai Superware Korat'},
-  'stvn':   {password:'0006', role:'user', company:'STVN',  label:'Srithai (Vietnam)'},
-  'stin':   {password:'0007', role:'user', company:'STIN',  label:'Srithaisuperware India'},
-  'stmpl':  {password:'0008', role:'user', company:'STMPL', label:'Srithai Mfg. Private'},
-  'sthn':   {password:'0009', role:'user', company:'STHN',  label:'Srithai (HANOI)'},
-  'stot':   {password:'0010', role:'user', company:'STOT',  label:'Srithai Otto'},
-  'tmfc':   {password:'0011', role:'user', company:'TMFC',  label:'Thai MFC'},
-  'stpk':   {password:'0012', role:'user', company:'STPK',  label:'Srithai Packaging'},
-  'stsnk':  {password:'0013', role:'user', company:'STSNK', label:'Srithai Sanko'},
-  'swm':    {password:'0014', role:'user', company:'SWM',   label:'Sheewamala'},
-  'ptms':   {password:'0015', role:'user', company:'PTMS',  label:'PT. Srithai Maspion'},
-  'stmkt':  {password:'0016', role:'user', company:'STMKT', label:'Srithai Marketing'},
-  'smm':    {password:'0017', role:'user', company:'SMM',   label:'Siam Melamine Marketing'},
-  'stss':   {password:'0018', role:'user', company:'STSS',  label:'Srithai Stainless'},
-  'ssh':    {password:'0019', role:'user', company:'SSH',   label:'S. Sahatara'},
-  'toho':   {password:'0020', role:'user', company:'TOHO',  label:'TOHO FOAM'},
-  'pcc':    {password:'0021', role:'user', company:'PCC',   label:'พี.ซี. คอนเทนเนอร์'},
-  'tct':    {password:'0022', role:'user', company:'TCT',   label:'ที.ซี.ที. คอนเทนเนอร์'},
+  'sts':   {hash:'131e27b7715c43825f14696b907812d34fb86a529dd8c98fedbf87016f5d9149', role:'admin', company:'STS',   label:'Srithai Superware (Public)'},
+  'stm':   {hash:'4fac6dbe26e823ed6edf999c63fab3507119cf3cbfb56036511aa62e258c35b4', role:'user',  company:'STM',   label:'Srithai Moulds'},
+  'stmy':  {hash:'446e21f212ab200933c4c9a0802e1ff0c410bbd75fca10168746fc49883096db', role:'user',  company:'STMY',  label:'Srithai Miyagawa'},
+  'ttp':   {hash:'0591b59c1bdd9acd2847a202ddd02c3f14f9b5a049a5707c3279c1e967745ed4', role:'user',  company:'TTP',   label:'T Thaiplass'},
+  'stsk':  {hash:'1ed8eb363bcd64c52f5f8703ecd464008979ac2ef462e6c5df342fe56c561bd5', role:'user',  company:'STSK',  label:'Srithai Superware Korat'},
+  'stvn':  {hash:'6b3b9a6ddb739ea6b3984e9038c33edeaecfb0eea476eba17b606d4699ca24e1', role:'user',  company:'STVN',  label:'Srithai (Vietnam)'},
+  'stin':  {hash:'f15cea39f11dc0371cfb9a4b7b1c38d5c636feb72d70e2759b0e505905ee9d01', role:'user',  company:'STIN',  label:'Srithaisuperware India'},
+  'stmpl': {hash:'0b6dfcd5427a43a60b0a38360499be09d494c8d8d67d70fc23080186e17161ba', role:'user',  company:'STMPL', label:'Srithai Mfg. Private'},
+  'sthn':  {hash:'44798dd7d0f2c058bff13fdbac8c49b3a2ee56823eddcc2d26054a15ef41c842', role:'user',  company:'STHN',  label:'Srithai (HANOI)'},
+  'stot':  {hash:'0b08e3dcc50fe4e5cee9b0b3a671a8db936f8335ba9050696d41cbb9a07f22e3', role:'user',  company:'STOT',  label:'Srithai Otto'},
+  'tmfc':  {hash:'a8d0b6f0939cfd883251f62b265f971ef8a5ab97eee32b91460f08b965601d93', role:'user',  company:'TMFC',  label:'Thai MFC'},
+  'stpk':  {hash:'84b2a5d834daee2fff7eb5e31f44ba68eb860d86d2cf8e37606a26fa775cf23b', role:'user',  company:'STPK',  label:'Srithai Packaging'},
+  'stsnk': {hash:'18303683dba5587003399c2103c2cbd8448bed6601514d9ea159a5af102e1310', role:'user',  company:'STSNK', label:'Srithai Sanko'},
+  'swm':   {hash:'07a8e31c03ce18180509eeb3107b8f7788f06e60b69cc91eccf6e1ec87917fc9', role:'user',  company:'SWM',   label:'Sheewamala'},
+  'ptms':  {hash:'4298e3b3ed58c3af466ba112a0fe1e45eb478751bb5ed9b0156938f1ba7a3dcf', role:'user',  company:'PTMS',  label:'PT. Srithai Maspion'},
+  'stmkt': {hash:'d5153a8e6fa6caad01f67479b366b5d9f3b6350e594dd3f8776d4edb7a2a889c', role:'user',  company:'STMKT', label:'Srithai Marketing'},
+  'smm':   {hash:'1ca028f07214879e7a13ac5fddab2db2f66149572a62e814e97e7ad4ba286f4c', role:'user',  company:'SMM',   label:'Siam Melamine Marketing'},
+  'stss':  {hash:'7550e2da7b7a165c69fb72da92347f15b535eeebe8ea58913b09542376e83917', role:'user',  company:'STSS',  label:'Srithai Stainless'},
+  'ssh':   {hash:'5e5dca63a627cc52986d9e4cf1ed33075ff5b76a41074600730a045900c437b1', role:'user',  company:'SSH',   label:'S. Sahatara'},
+  'toho':  {hash:'3a0a6026cbab0726507859c4d59884c41ac6042bc8fc9f5c9ff7dc16164e5e63', role:'user',  company:'TOHO',  label:'TOHO FOAM'},
+  'pcc':   {hash:'ab4cbdd8d697c57b18419764dffd2f4f39eff2bc0ff9ee1019cf1b68cf34f86d', role:'user',  company:'PCC',   label:'พี.ซี. คอนเทนเนอร์'},
+  'tct':   {hash:'6e1bd58295f37962db4f0f1631f73a7ab96ca4df95a993af8b3a0f94523ef2f8', role:'user',  company:'TCT',   label:'ที.ซี.ที. คอนเทนเนอร์'},
 };
+
+// Hash password with SHA-256 (Web Crypto API)
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
 
 function getAuth(){return JSON.parse(sessionStorage.getItem('ict_auth')||'null')}
 function setAuth(a){sessionStorage.setItem('ict_auth',JSON.stringify(a))}
@@ -562,18 +566,25 @@ function onLoginCompanyChange(){
   document.getElementById('login-period-section').style.display='grid';
 }
 
-function doLogin(){
+async function doLogin(){
   const coVal=document.getElementById('login-company').value;
   const pass=document.getElementById('login-pass').value;
   const yr=document.getElementById('login-year').value;
   const qt=document.getElementById('login-quarter').value;
   const err=document.getElementById('login-err');
+  const btn=document.querySelector('.login-btn');
 
   if(!coVal){err.textContent='กรุณาเลือกบริษัท';err.classList.add('show');return;}
   if(!pass){err.textContent='กรุณากรอก Password';err.classList.add('show');return;}
 
   const acc=AUTH_USERS[coVal];
-  if(!acc||acc.password!==pass){
+  if(!acc){err.textContent='Password ไม่ถูกต้อง';err.classList.add('show');document.getElementById('login-pass').value='';return;}
+
+  btn.disabled=true;btn.textContent='กำลังตรวจสอบ...';
+  const inputHash=await sha256(pass);
+  btn.disabled=false;btn.textContent='เข้าสู่ระบบ';
+
+  if(inputHash!==acc.hash){
     err.textContent='Password ไม่ถูกต้อง';err.classList.add('show');
     document.getElementById('login-pass').value='';return;
   }
