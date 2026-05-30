@@ -2730,18 +2730,19 @@ function renderMatching(){
     });
   });
 
-  // Build PL Summary from plPairs (only matching-eligible items per company pair)
+  // Build PL Summary — normalize pair direction so A→B and B→A merge into one row
   const plSummaryMap=new Map();
   plPairs.forEach(p=>{
-    const key=`${p.seller}→${p.buyer}`;
-    if(!plSummaryMap.has(key))plSummaryMap.set(key,{seller:p.seller,buyer:p.buyer,sellerSum:0,buyerSum:0});
+    const [coA,coB]=[p.seller,p.buyer].sort();
+    const key=`${coA}|${coB}`;
+    if(!plSummaryMap.has(key))plSummaryMap.set(key,{coA,coB,revSum:0,expSum:0});
     const e=plSummaryMap.get(key);
-    e.sellerSum+=p.aAmt;
-    e.buyerSum+=p.bAmt;
+    e.revSum+=p.aAmt;   // รวม revenue ทุกทิศทาง
+    e.expSum+=p.bAmt;   // รวม expense ทุกทิศทาง
   });
   plSummaryMap.forEach(e=>{
-    const diff=Math.abs(e.sellerSum-e.buyerSum);
-    plSummary.push({seller:e.seller,buyer:e.buyer,totalSales:e.sellerSum,totalExp:e.buyerSum,diff,status:diff<0.01?'matched':'unmatched'});
+    const diff=Math.abs(e.revSum-e.expSum);
+    plSummary.push({coA:e.coA,coB:e.coB,totalRev:e.revSum,totalExp:e.expSum,diff,status:diff<0.01?'matched':'unmatched'});
   });
 
   const plMatched=plPairs.filter(p=>p.status==='matched').length;
@@ -2774,9 +2775,25 @@ function renderMatching(){
     const unmatchCnt=pairs.filter(p=>p.status==='unmatched').length;
     let rows='';
     if(type==='pl'){
-      pairs.forEach(p=>{
+      // Group rows by normalized company pair to avoid "duplicate" confusion
+      let lastPairKey='';
+      // Sort so same pair (both directions) are adjacent
+      const sorted=[...pairs].sort((a,b)=>{
+        const ka=[a.seller,a.buyer].sort().join('|');
+        const kb=[b.seller,b.buyer].sort().join('|');
+        return ka.localeCompare(kb)||a.seller.localeCompare(b.seller);
+      });
+      sorted.forEach(p=>{
+        const pairKey=[p.seller,p.buyer].sort().join('|');
+        if(pairKey!==lastPairKey){
+          lastPairKey=pairKey;
+          const [coA,coB]=[p.seller,p.buyer].sort();
+          rows+=`<tr class="rs-hdr"><td colspan="7" style="padding:6px 11px!important;font-size:11px!important;background:#f0f4f8!important;color:#4a5568!important;font-weight:700!important;letter-spacing:.3px!important">
+            🏢 ${sn(coA)} ↔ ${sn(coB)}
+          </td></tr>`;
+        }
         rows+=`<tr class="${rowCls(p.status)}">
-          <td style="white-space:nowrap">${sn(p.seller)}</td>
+          <td style="white-space:nowrap;padding-left:18px!important">${sn(p.seller)} →</td>
           <td style="white-space:nowrap">${sn(p.buyer)}</td>
           <td>${p.label}${p.note?`<br><span style="font-size:10px;color:#888">${p.note}</span>`:''}</td>
           <td class="num">${fmtNum(p.aAmt)}</td>
@@ -2786,9 +2803,23 @@ function renderMatching(){
         </tr>`;
       });
     } else {
-      pairs.forEach(p=>{
+      let lastPairKey='';
+      const sorted=[...pairs].sort((a,b)=>{
+        const ka=[a.coFrom,a.coTo].sort().join('|');
+        const kb=[b.coFrom,b.coTo].sort().join('|');
+        return ka.localeCompare(kb)||a.coFrom.localeCompare(b.coFrom);
+      });
+      sorted.forEach(p=>{
+        const pairKey=[p.coFrom,p.coTo].sort().join('|');
+        if(pairKey!==lastPairKey){
+          lastPairKey=pairKey;
+          const [coA,coB]=[p.coFrom,p.coTo].sort();
+          rows+=`<tr class="rs-hdr"><td colspan="7" style="padding:6px 11px!important;font-size:11px!important;background:#f0f4f8!important;color:#4a5568!important;font-weight:700!important;letter-spacing:.3px!important">
+            🏢 ${sn(coA)} ↔ ${sn(coB)}
+          </td></tr>`;
+        }
         rows+=`<tr class="${rowCls(p.status)}">
-          <td style="white-space:nowrap">${sn(p.coFrom)}</td>
+          <td style="white-space:nowrap;padding-left:18px!important">${sn(p.coFrom)}</td>
           <td style="white-space:nowrap">${sn(p.coTo)}</td>
           <td>${p.label}</td>
           <td class="num">${fmtNum(p.astAmt)}</td>
@@ -2820,24 +2851,35 @@ function renderMatching(){
 
   // ── PL Summary section ──
   let sumRows='';
+  const sumMatched=plSummary.filter(p=>p.status==='matched').length;
+  const sumUnmatched=plSummary.filter(p=>p.status==='unmatched').length;
   plSummary.forEach(p=>{
     sumRows+=`<tr class="${rowCls(p.status)}">
-      <td style="white-space:nowrap">${sn(p.seller)}</td><td style="white-space:nowrap">${sn(p.buyer)}</td>
-      <td class="num">${fmtNum(p.totalSales)}</td><td class="num">${fmtNum(p.totalExp)}</td>
+      <td style="white-space:nowrap;font-weight:600">${sn(p.coA)} ↔ ${sn(p.coB)}</td>
+      <td class="num">${fmtNum(p.totalRev)}</td>
+      <td class="num">${fmtNum(p.totalExp)}</td>
       <td class="num ${p.diff?'diff-text':''}">${p.diff?fmtNum(p.diff):'-'}</td>
       <td><span class="badge ${bCls(p.status)}">${bLbl(p.status)}</span></td>
     </tr>`;
   });
 
+  const sumPillOk=`<span style="background:rgba(255,255,255,.25);padding:2px 7px;border-radius:10px;font-size:11px">${sumMatched} ✓</span>`;
+  const sumPillErr=sumUnmatched?`<span style="background:#fed7d7;color:#742a2a;padding:2px 7px;border-radius:10px;font-size:11px;margin-left:4px">${sumUnmatched} ✗</span>`:'';
   const plSumHtml=`<div class="msec-wrap" style="margin-bottom:10px">
     <div class="msec-hdr" style="background:#C0392B" onclick="toggleMatchSec('sum')">
-      <span>📊 PL SUMMARY — ยอดรวมต่อคู่บริษัท</span>
-      <span id="msec-arr-sum">▼</span>
+      <span>📊 PL SUMMARY — ยอดรวมต่อคู่บริษัท (${plSummary.length} คู่)</span>
+      <span style="display:flex;align-items:center;gap:4px">${sumPillOk}${sumPillErr}<span id="msec-arr-sum">▼</span></span>
     </div>
     <div class="msec-body" id="msec-body-sum">
+      <div style="padding:8px 14px;background:#fff8f8;font-size:11px;color:#718096;border-bottom:1px solid #e2e8f0">
+        💡 ยอดรวม Revenue และ Expense ของแต่ละคู่บริษัท (รวมทุกทิศทาง) — ถ้าตัวเลขตรงกัน = Matched
+      </div>
       <div class="rt-wrap" style="margin-top:0"><table class="rt" id="mat-table">
-        <thead><tr><th style="text-align:left">Seller</th><th style="text-align:left">Buyer</th><th>Total Sales</th><th>Total Expense</th><th>Difference</th><th>Status</th></tr></thead>
-        <tbody>${sumRows||'<tr><td colspan="6" style="text-align:center;color:#a0aec0;padding:12px">ไม่พบข้อมูล</td></tr>'}</tbody>
+        <thead><tr>
+          <th style="text-align:left">คู่บริษัท (A ↔ B)</th>
+          <th>รวม Revenue</th><th>รวม Expense</th><th>Difference</th><th>Status</th>
+        </tr></thead>
+        <tbody>${sumRows||'<tr><td colspan="5" style="text-align:center;color:#a0aec0;padding:12px">ไม่พบข้อมูล</td></tr>'}</tbody>
       </table></div>
     </div>
   </div>`;
