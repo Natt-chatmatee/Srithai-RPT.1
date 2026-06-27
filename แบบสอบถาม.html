@@ -16,54 +16,214 @@
       padding: 24px;
     }
     .card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-      padding: 48px 40px;
+      background: #f0f0f8;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      padding: 40px 36px 36px;
       width: 100%;
-      max-width: 480px;
+      max-width: 440px;
+      position: relative;
+      overflow: hidden;
     }
-    .card-header { text-align: center; margin-bottom: 36px; }
-    .card-header .icon { font-size: 48px; margin-bottom: 12px; }
-    .card-header h1 { font-size: 24px; color: #2d2d2d; font-weight: 700; }
-    .card-header p { color: #888; font-size: 14px; margin-top: 6px; }
-    .form-group { margin-bottom: 20px; }
-    label { display: block; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 8px; }
-    label .required { color: #e53e3e; margin-left: 3px; }
-    input {
-      width: 100%; padding: 12px 16px;
-      border: 2px solid #e2e8f0; border-radius: 10px;
-      font-size: 15px; color: #2d2d2d;
-      transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+
+    /* Avatar Section */
+    .avatar-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+      position: relative;
     }
-    input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
-    input::placeholder { color: #bbb; }
-    input.error { border-color: #e53e3e; }
+    .avatar-wrap {
+      position: relative;
+      width: 200px;
+      height: 220px;
+    }
+    .sparkle {
+      position: absolute;
+      font-size: 18px;
+      animation: twinkle 2s infinite;
+      z-index: 2;
+    }
+    .sparkle-1 { top: 10px; left: 5px; animation-delay: 0s; }
+    .sparkle-2 { top: 0px; right: 15px; animation-delay: 0.5s; }
+    .sparkle-3 { top: 55px; left: -5px; animation-delay: 1s; }
+    .sparkle-4 { top: 45px; right: 0px; animation-delay: 1.5s; }
+    @keyframes twinkle {
+      0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+      50% { opacity: 0.2; transform: scale(0.5) rotate(20deg); }
+    }
+    .avatar-svg {
+      display: block;
+      margin: 0 auto;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    /* Blink animation */
+    @keyframes blink {
+      0%, 42%, 44%, 100% { transform: scaleY(1); }
+      43% { transform: scaleY(0.1); }
+    }
+    .eye-group { animation: blink 4s infinite; transform-origin: center; }
+    /* Wave arm */
+    @keyframes wave {
+      0%, 70%, 100% { transform: rotate(0deg); }
+      75% { transform: rotate(-20deg); }
+      80% { transform: rotate(10deg); }
+      85% { transform: rotate(-15deg); }
+      90% { transform: rotate(5deg); }
+      95% { transform: rotate(-5deg); }
+    }
+    .wave-arm { animation: wave 5s ease-in-out infinite; transform-origin: 155px 105px; }
+    /* Hair sway */
+    @keyframes hairSway {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(2deg); }
+      75% { transform: rotate(-2deg); }
+    }
+    .hair-group { animation: hairSway 4s ease-in-out infinite; transform-origin: 90px 30px; }
+    /* Heart float */
+    @keyframes heartFloat {
+      0% { opacity: 0; transform: translateY(0) scale(0.5); }
+      20% { opacity: 1; transform: translateY(-5px) scale(1); }
+      100% { opacity: 0; transform: translateY(-25px) scale(0.3); }
+    }
+    .heart-anim { animation: heartFloat 3s ease-out infinite; }
+    .heart-anim-2 { animation: heartFloat 3s ease-out 1.5s infinite; }
+
+    /* Speech bubble */
+    .speech {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .speech .highlight {
+      font-size: 17px;
+      font-weight: 700;
+      color: #5a4fcf;
+    }
+    .speech .sub {
+      font-size: 14px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    /* Progress */
+    .progress-wrap {
+      margin-bottom: 24px;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #777;
+      margin-bottom: 8px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #ddd;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    /* Form */
+    .step { display: none; }
+    .step.active { display: block; }
+    .question-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .required { color: #e53e3e; margin-left: 3px; }
+    input[type="text"], input[type="email"], input[type="tel"],
+    input[type="number"], select, textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 15px;
+      color: #2d2d2d;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+    }
+    input::placeholder, textarea::placeholder { color: #bbb; }
+    input.error, select.error, textarea.error { border-color: #e53e3e; }
     .error-msg { color: #e53e3e; font-size: 12px; margin-top: 5px; display: none; }
     .error-msg.show { display: block; }
-    button[type="submit"] {
-      width: 100%; padding: 14px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: #fff; border: none; border-radius: 10px;
-      font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px;
-      transition: opacity 0.2s, transform 0.1s;
+    textarea { resize: none; height: 90px; }
+
+    /* Radio / Checkbox options */
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      font-size: 14px;
+      color: #333;
     }
-    button[type="submit"]:hover { opacity: 0.92; }
-    button[type="submit"]:active { transform: scale(0.98); }
-    .success-box { display: none; text-align: center; padding: 32px 0 8px; }
-    .success-box .checkmark { font-size: 56px; }
-    .success-box h2 { color: #2d2d2d; font-size: 22px; margin: 12px 0 8px; }
+    .option-item:hover { border-color: #667eea; }
+    .option-item input[type="radio"],
+    .option-item input[type="checkbox"] { accent-color: #667eea; width: 18px; height: 18px; }
+    .option-item.selected { border-color: #667eea; background: #f0f0ff; }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 12px; margin-top: 24px; }
+    .btn-next, .btn-prev, .btn-submit {
+      flex: 1; padding: 13px;
+      border-radius: 12px; border: none;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-next, .btn-submit {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+    }
+    .btn-prev {
+      background: #fff;
+      border: 2px solid #667eea;
+      color: #667eea;
+    }
+    .btn-next:hover, .btn-submit:hover { opacity: 0.9; }
+    .btn-next:active, .btn-submit:active { transform: scale(0.98); }
+
+    /* Success */
+    .success-box { display: none; text-align: center; padding: 20px 0; }
+    .success-box .check { font-size: 60px; }
+    .success-box h2 { color: #2d2d2d; font-size: 22px; margin: 14px 0 8px; }
     .success-box p { color: #666; font-size: 14px; }
-    .btn-row { display: flex; gap: 12px; margin-top: 20px; justify-content: center; }
+    .success-btn-row { display: flex; gap: 12px; margin-top: 24px; justify-content: center; }
     .reset-btn {
       background: none; border: 2px solid #667eea; color: #667eea;
-      border-radius: 10px; padding: 10px 24px; font-size: 14px; font-weight: 600;
+      border-radius: 12px; padding: 10px 24px; font-size: 14px; font-weight: 600;
       cursor: pointer; transition: background 0.2s, color 0.2s;
     }
     .reset-btn:hover { background: #667eea; color: #fff; }
     .admin-link {
       background: #667eea; border: none; color: #fff;
-      border-radius: 10px; padding: 10px 24px; font-size: 14px; font-weight: 600;
+      border-radius: 12px; padding: 10px 24px; font-size: 14px; font-weight: 600;
       cursor: pointer; text-decoration: none; display: inline-block;
       transition: opacity 0.2s;
     }
@@ -71,94 +231,470 @@
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="card-header">
-      <div class="icon">📋</div>
-      <h1>แบบสอบถาม</h1>
-      <p>กรุณากรอกข้อมูลให้ครบถ้วน</p>
-    </div>
+<div class="card">
 
-    <form id="surveyForm" novalidate>
-      <div class="form-group">
-        <label for="name">ชื่อ-นามสกุล <span class="required">*</span></label>
-        <input type="text" id="name" placeholder="เช่น สมชาย ใจดี" />
-        <div class="error-msg" id="nameErr">กรุณากรอกชื่อ-นามสกุล</div>
-      </div>
-      <div class="form-group">
-        <label for="email">อีเมล <span class="required">*</span></label>
-        <input type="email" id="email" placeholder="เช่น somchai@email.com" />
-        <div class="error-msg" id="emailErr">กรุณากรอกอีเมลให้ถูกต้อง</div>
-      </div>
-      <div class="form-group">
-        <label for="phone">เบอร์โทรศัพท์ <span class="required">*</span></label>
-        <input type="tel" id="phone" placeholder="เช่น 081-234-5678" maxlength="15" />
-        <div class="error-msg" id="phoneErr">กรุณากรอกเบอร์โทรให้ถูกต้อง (9-10 หลัก)</div>
-      </div>
-      <button type="submit">ส่งแบบสอบถาม</button>
-    </form>
+  <!-- Avatar -->
+  <div class="avatar-section">
+    <div class="avatar-wrap">
+      <span class="sparkle sparkle-1">✦</span>
+      <span class="sparkle sparkle-2">✦</span>
+      <span class="sparkle sparkle-3">✦</span>
+      <span class="sparkle sparkle-4">✦</span>
+      <svg class="avatar-svg" width="180" height="210" viewBox="0 0 180 210" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="skinGrad" cx="50%" cy="40%" r="55%">
+            <stop offset="0%" stop-color="#ffe8d6"/>
+            <stop offset="100%" stop-color="#fdd8b5"/>
+          </radialGradient>
+          <radialGradient id="shirtGrad" cx="50%" cy="30%" r="60%">
+            <stop offset="0%" stop-color="#a78bfa"/>
+            <stop offset="100%" stop-color="#7c3aed"/>
+          </radialGradient>
+          <radialGradient id="cheekGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fca5a5" stop-opacity="0.7"/>
+            <stop offset="100%" stop-color="#fca5a5" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="hairGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#4a3728"/>
+            <stop offset="50%" stop-color="#5c4033"/>
+            <stop offset="100%" stop-color="#3d2b1f"/>
+          </linearGradient>
+          <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+            <feOffset dx="0" dy="2"/>
+            <feComponentTransfer><feFuncA type="linear" slope="0.15"/></feComponentTransfer>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
 
-    <div class="success-box" id="successBox">
-      <div class="checkmark">✅</div>
-      <h2>ส่งข้อมูลสำเร็จ!</h2>
-      <p>ขอบคุณที่กรอกแบบสอบถาม</p>
-      <div class="btn-row">
-        <button class="reset-btn" onclick="resetForm()">กรอกใหม่</button>
-        <a class="admin-link" href="admin.html">ดูรายชื่อ</a>
-      </div>
+        <!-- Floating hearts -->
+        <text class="heart-anim" x="20" y="45" font-size="14" fill="#f472b6">&#x2764;</text>
+        <text class="heart-anim-2" x="150" y="35" font-size="12" fill="#fb7185">&#x2764;</text>
+
+        <!-- Shadow on ground -->
+        <ellipse cx="90" cy="205" rx="40" ry="5" fill="rgba(0,0,0,0.07)"/>
+
+        <!-- === LEGS === -->
+        <!-- Shoes -->
+        <ellipse cx="72" cy="192" rx="14" ry="7" fill="#6d28d9"/>
+        <ellipse cx="108" cy="192" rx="14" ry="7" fill="#6d28d9"/>
+        <!-- Legs -->
+        <rect x="66" y="160" width="14" height="34" rx="7" fill="url(#skinGrad)"/>
+        <rect x="100" y="160" width="14" height="34" rx="7" fill="url(#skinGrad)"/>
+
+        <!-- === BODY (shirt) === -->
+        <ellipse cx="90" cy="140" rx="34" ry="30" fill="url(#shirtGrad)" filter="url(#softShadow)"/>
+        <!-- Shirt collar -->
+        <path d="M76 114 Q90 126 104 114" stroke="#c4b5fd" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- Shirt pocket heart -->
+        <text x="78" y="142" font-size="10" fill="#c4b5fd">&#x2665;</text>
+        <!-- Shirt button dots -->
+        <circle cx="90" cy="148" r="1.5" fill="#c4b5fd"/>
+        <circle cx="90" cy="156" r="1.5" fill="#c4b5fd"/>
+
+        <!-- === ARMS === -->
+        <!-- Left arm -->
+        <ellipse cx="50" cy="138" rx="10" ry="18" fill="url(#skinGrad)" transform="rotate(-12 50 138)"/>
+        <!-- Left hand -->
+        <circle cx="47" cy="155" r="7" fill="#ffe8d6"/>
+
+        <!-- Right arm (waving) -->
+        <g class="wave-arm">
+          <ellipse cx="130" cy="138" rx="10" ry="18" fill="url(#skinGrad)" transform="rotate(12 130 138)"/>
+          <!-- Right hand -->
+          <circle cx="133" cy="122" r="7" fill="#ffe8d6"/>
+          <!-- Fingers suggestion -->
+          <circle cx="129" cy="117" r="3" fill="#ffe8d6"/>
+          <circle cx="134" cy="116" r="3" fill="#ffe8d6"/>
+          <circle cx="138" cy="118" r="3" fill="#ffe8d6"/>
+        </g>
+
+        <!-- === NECK === -->
+        <rect x="82" y="100" width="16" height="16" rx="8" fill="url(#skinGrad)"/>
+
+        <!-- === HEAD === -->
+        <circle cx="90" cy="68" r="44" fill="url(#skinGrad)" filter="url(#softShadow)"/>
+
+        <!-- === HAIR (big fluffy kawaii hair) === -->
+        <g class="hair-group">
+          <!-- Main hair volume -->
+          <path d="M42 60
+                   Q38 28 55 16
+                   Q70 8 90 10
+                   Q110 8 125 16
+                   Q142 28 138 60
+                   Q140 42 130 32
+                   Q118 22 105 20
+                   Q90 16 75 20
+                   Q62 22 50 32
+                   Q40 42 42 60Z" fill="url(#hairGrad)"/>
+          <!-- Hair top fluffy bumps -->
+          <ellipse cx="68" cy="18" rx="18" ry="12" fill="url(#hairGrad)"/>
+          <ellipse cx="90" cy="14" rx="16" ry="11" fill="url(#hairGrad)"/>
+          <ellipse cx="112" cy="18" rx="18" ry="12" fill="url(#hairGrad)"/>
+          <!-- Side hair strands -->
+          <path d="M44 55 Q38 58 36 72 Q34 80 38 85" stroke="url(#hairGrad)" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <path d="M136 55 Q142 58 144 72 Q146 80 142 85" stroke="url(#hairGrad)" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <!-- Fringe / Bangs -->
+          <path d="M52 42 Q55 28 68 24 Q72 36 60 44Z" fill="#5c4033"/>
+          <path d="M60 38 Q68 22 82 20 Q80 34 68 40Z" fill="#4a3728"/>
+          <path d="M75 36 Q85 18 98 20 Q94 34 82 38Z" fill="#5c4033"/>
+          <path d="M92 38 Q100 22 115 24 Q110 38 100 42Z" fill="#4a3728"/>
+          <path d="M108 42 Q118 28 128 34 Q122 44 112 46Z" fill="#5c4033"/>
+          <!-- Hair shine -->
+          <ellipse cx="78" cy="22" rx="8" ry="3" fill="white" opacity="0.2" transform="rotate(-15 78 22)"/>
+          <ellipse cx="105" cy="20" rx="6" ry="2.5" fill="white" opacity="0.15" transform="rotate(10 105 20)"/>
+        </g>
+
+        <!-- === EARS === -->
+        <ellipse cx="46" cy="72" rx="7" ry="9" fill="url(#skinGrad)"/>
+        <ellipse cx="134" cy="72" rx="7" ry="9" fill="url(#skinGrad)"/>
+        <ellipse cx="46" cy="72" rx="4" ry="5.5" fill="#f5b78a" opacity="0.5"/>
+        <ellipse cx="134" cy="72" rx="4" ry="5.5" fill="#f5b78a" opacity="0.5"/>
+        <!-- Tiny earring -->
+        <circle cx="46" cy="80" r="2" fill="#fbbf24"/>
+        <circle cx="134" cy="80" r="2" fill="#fbbf24"/>
+
+        <!-- === EYES (big kawaii eyes) === -->
+        <g class="eye-group">
+          <!-- Left eye -->
+          <ellipse cx="74" cy="70" rx="12" ry="13" fill="white"/>
+          <ellipse cx="74" cy="70" rx="11.5" ry="12.5" fill="white" stroke="#d1d5db" stroke-width="0.5"/>
+          <circle cx="76" cy="72" r="7.5" fill="#4a3728"/>
+          <circle cx="76" cy="72" r="5" fill="#2d1810"/>
+          <!-- Eye sparkle -->
+          <circle cx="79" cy="68" r="3" fill="white"/>
+          <circle cx="74" cy="74" r="1.5" fill="white" opacity="0.8"/>
+
+          <!-- Right eye -->
+          <ellipse cx="106" cy="70" rx="12" ry="13" fill="white"/>
+          <ellipse cx="106" cy="70" rx="11.5" ry="12.5" fill="white" stroke="#d1d5db" stroke-width="0.5"/>
+          <circle cx="108" cy="72" r="7.5" fill="#4a3728"/>
+          <circle cx="108" cy="72" r="5" fill="#2d1810"/>
+          <!-- Eye sparkle -->
+          <circle cx="111" cy="68" r="3" fill="white"/>
+          <circle cx="106" cy="74" r="1.5" fill="white" opacity="0.8"/>
+        </g>
+
+        <!-- Eyelashes -->
+        <path d="M62 62 L59 57" stroke="#3d2b1f" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M65 59 L63 54" stroke="#3d2b1f" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M115 59 L117 54" stroke="#3d2b1f" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M118 62 L121 57" stroke="#3d2b1f" stroke-width="1.5" stroke-linecap="round"/>
+
+        <!-- Eyebrows (cute thin arches) -->
+        <path d="M64 54 Q74 49 84 54" stroke="#4a3728" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M96 54 Q106 49 116 54" stroke="#4a3728" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+        <!-- === CHEEKS (rosy blush) === -->
+        <ellipse cx="62" cy="82" rx="10" ry="7" fill="url(#cheekGrad)"/>
+        <ellipse cx="118" cy="82" rx="10" ry="7" fill="url(#cheekGrad)"/>
+
+        <!-- === NOSE (tiny cute dot) === -->
+        <ellipse cx="90" cy="80" rx="2.5" ry="2" fill="#e8a882" opacity="0.6"/>
+
+        <!-- === MOUTH (happy kawaii smile) === -->
+        <path d="M80 88 Q90 100 100 88" stroke="#c0755a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- Tiny tongue -->
+        <ellipse cx="90" cy="92" rx="5" ry="3.5" fill="#fca5a5"/>
+        <path d="M85 92 Q90 96 95 92" fill="#e88080"/>
+
+        <!-- Star sparkle on cheek -->
+        <text x="125" y="78" font-size="8" fill="#fbbf24" opacity="0.6">&#x2726;</text>
+      </svg>
     </div>
   </div>
 
-  <script>
-    document.getElementById('surveyForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      if (validate()) saveAndShow();
+  <!-- Speech -->
+  <div class="speech" id="speechBox">
+    <div class="highlight" id="speechTitle">เริ่มได้ดี! 💪</div>
+    <div class="sub" id="speechSub">กรอกต่อนะ ฉันรอดูข้อมูลของคุณ</div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-label">
+      <span>ความคืบหน้า</span>
+      <span id="progressText">1 / 11</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 9%"></div>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <form id="surveyForm" novalidate>
+
+    <div class="step active" data-step="1">
+      <label class="question-label">1. ชื่อ-นามสกุล <span class="required">*</span></label>
+      <input type="text" id="name" placeholder="เช่น สมชาย ใจดี"/>
+      <div class="error-msg" id="nameErr">กรุณากรอกชื่อ-นามสกุล</div>
+    </div>
+
+    <div class="step" data-step="2">
+      <label class="question-label">2. อีเมล <span class="required">*</span></label>
+      <input type="email" id="email" placeholder="เช่น somchai@email.com"/>
+      <div class="error-msg" id="emailErr">กรุณากรอกอีเมลให้ถูกต้อง</div>
+    </div>
+
+    <div class="step" data-step="3">
+      <label class="question-label">3. เบอร์โทรศัพท์ <span class="required">*</span></label>
+      <input type="tel" id="phone" placeholder="เช่น 081-234-5678" maxlength="15"/>
+      <div class="error-msg" id="phoneErr">กรุณากรอกเบอร์โทรให้ถูกต้อง (9-10 หลัก)</div>
+    </div>
+
+    <div class="step" data-step="4">
+      <label class="question-label">4. อายุ <span class="required">*</span></label>
+      <input type="number" id="age" placeholder="เช่น 25" min="1" max="120"/>
+      <div class="error-msg" id="ageErr">กรุณากรอกอายุให้ถูกต้อง</div>
+    </div>
+
+    <div class="step" data-step="5">
+      <label class="question-label">5. เพศ <span class="required">*</span></label>
+      <div class="options" id="genderOptions">
+        <label class="option-item"><input type="radio" name="gender" value="ชาย"/> ชาย</label>
+        <label class="option-item"><input type="radio" name="gender" value="หญิง"/> หญิง</label>
+        <label class="option-item"><input type="radio" name="gender" value="ไม่ระบุ"/> ไม่ระบุ / อื่น ๆ</label>
+      </div>
+      <div class="error-msg" id="genderErr">กรุณาเลือกเพศ</div>
+    </div>
+
+    <div class="step" data-step="6">
+      <label class="question-label">6. ระดับการศึกษา <span class="required">*</span></label>
+      <select id="education">
+        <option value="">-- เลือก --</option>
+        <option>ต่ำกว่ามัธยมปลาย</option>
+        <option>มัธยมปลาย / ปวช.</option>
+        <option>อนุปริญญา / ปวส.</option>
+        <option>ปริญญาตรี</option>
+        <option>ปริญญาโท</option>
+        <option>ปริญญาเอก</option>
+      </select>
+      <div class="error-msg" id="eduErr">กรุณาเลือกระดับการศึกษา</div>
+    </div>
+
+    <div class="step" data-step="7">
+      <label class="question-label">7. อาชีพ <span class="required">*</span></label>
+      <input type="text" id="job" placeholder="เช่น นักศึกษา, พนักงานบริษัท"/>
+      <div class="error-msg" id="jobErr">กรุณากรอกอาชีพ</div>
+    </div>
+
+    <div class="step" data-step="8">
+      <label class="question-label">8. รายได้ต่อเดือน (โดยประมาณ)</label>
+      <select id="income">
+        <option value="">-- เลือก --</option>
+        <option>น้อยกว่า 10,000 บาท</option>
+        <option>10,001 – 20,000 บาท</option>
+        <option>20,001 – 30,000 บาท</option>
+        <option>30,001 – 50,000 บาท</option>
+        <option>มากกว่า 50,000 บาท</option>
+        <option>ไม่ประสงค์ระบุ</option>
+      </select>
+    </div>
+
+    <div class="step" data-step="9">
+      <label class="question-label">9. ท่านรู้จักเราจากช่องทางไหน?</label>
+      <div class="options">
+        <label class="option-item"><input type="checkbox" name="source" value="Facebook"/> Facebook</label>
+        <label class="option-item"><input type="checkbox" name="source" value="Line"/> Line</label>
+        <label class="option-item"><input type="checkbox" name="source" value="เพื่อนแนะนำ"/> เพื่อนแนะนำ</label>
+        <label class="option-item"><input type="checkbox" name="source" value="อื่น ๆ"/> อื่น ๆ</label>
+      </div>
+    </div>
+
+    <div class="step" data-step="10">
+      <label class="question-label">10. ความพึงพอใจโดยรวม <span class="required">*</span></label>
+      <div class="options" id="satisfyOptions">
+        <label class="option-item"><input type="radio" name="satisfy" value="5"/> ⭐⭐⭐⭐⭐ พึงพอใจมากที่สุด</label>
+        <label class="option-item"><input type="radio" name="satisfy" value="4"/> ⭐⭐⭐⭐ พึงพอใจมาก</label>
+        <label class="option-item"><input type="radio" name="satisfy" value="3"/> ⭐⭐⭐ ปานกลาง</label>
+        <label class="option-item"><input type="radio" name="satisfy" value="2"/> ⭐⭐ ไม่ค่อยพึงพอใจ</label>
+        <label class="option-item"><input type="radio" name="satisfy" value="1"/> ⭐ ไม่พึงพอใจ</label>
+      </div>
+      <div class="error-msg" id="satisfyErr">กรุณาเลือกระดับความพึงพอใจ</div>
+    </div>
+
+    <div class="step" data-step="11">
+      <label class="question-label">11. ข้อเสนอแนะเพิ่มเติม</label>
+      <textarea id="suggestion" placeholder="พิมพ์ข้อเสนอแนะของคุณ..."></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" class="btn-prev" id="prevBtn" style="display:none" onclick="prevStep()">← ย้อนกลับ</button>
+      <button type="button" class="btn-next" id="nextBtn" onclick="nextStep()">ถัดไป →</button>
+      <button type="submit" class="btn-submit" id="submitBtn" style="display:none">ส่งแบบสอบถาม ✓</button>
+    </div>
+  </form>
+
+  <!-- Success -->
+  <div class="success-box" id="successBox">
+    <div class="check">🎉</div>
+    <h2>ส่งข้อมูลสำเร็จ!</h2>
+    <p>ขอบคุณมากที่กรอกแบบสอบถาม<br>ข้อมูลของคุณถูกบันทึกเรียบร้อยแล้ว</p>
+    <div class="success-btn-row">
+      <button class="reset-btn" onclick="resetForm()">กรอกใหม่</button>
+      <a class="admin-link" href="admin.html">ดูรายชื่อ</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const totalSteps = 11;
+  let currentStep = 1;
+
+  const speeches = [
+    { title: 'สวัสดี! 👋', sub: 'เริ่มกรอกแบบสอบถามกันเลย' },
+    { title: 'เยี่ยมมาก! ✨', sub: 'ข้อมูลติดต่อจะช่วยเราได้มาก' },
+    { title: 'ดีมากเลย! 📱', sub: 'เกือบเสร็จส่วนแรกแล้ว' },
+    { title: 'เก่งมาก! 💪', sub: 'ข้อมูลส่วนตัวแค่นี้เอง' },
+    { title: 'เริ่มได้ดี! 😊', sub: 'กรอกต่อนะ ฉันรอดูข้อมูลของคุณ' },
+    { title: 'ครึ่งทางแล้ว! 🎯', sub: 'อีกนิดเดียวก็เสร็จแล้ว' },
+    { title: 'สุดยอด! 🌟', sub: 'แค่อีกไม่กี่ข้อเอง' },
+    { title: 'ไปได้สวย! 🚀', sub: 'ใกล้เสร็จแล้วนะ' },
+    { title: 'เกือบถึงแล้ว! 🏁', sub: 'อีกสองข้อเท่านั้น' },
+    { title: 'ข้อสุดท้ายเกือบแล้ว! ⭐', sub: 'บอกความรู้สึกให้ฟังด้วยนะ' },
+    { title: 'ข้อสุดท้าย! 🎊', sub: 'มีอะไรอยากบอกเพิ่มเติมไหม?' },
+  ];
+
+  function updateUI() {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+
+    const pct = Math.round((currentStep / totalSteps) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = currentStep + ' / ' + totalSteps;
+
+    const s = speeches[currentStep - 1];
+    document.getElementById('speechTitle').textContent = s.title;
+    document.getElementById('speechSub').textContent = s.sub;
+
+    document.getElementById('prevBtn').style.display = currentStep > 1 ? 'block' : 'none';
+    document.getElementById('nextBtn').style.display = currentStep < totalSteps ? 'block' : 'none';
+    document.getElementById('submitBtn').style.display = currentStep === totalSteps ? 'block' : 'none';
+  }
+
+  function validateStep(step) {
+    if (step === 1) {
+      const v = document.getElementById('name').value.trim();
+      const err = document.getElementById('nameErr');
+      const el = document.getElementById('name');
+      if (!v) { el.classList.add('error'); err.classList.add('show'); return false; }
+      el.classList.remove('error'); err.classList.remove('show');
+    }
+    if (step === 2) {
+      const v = document.getElementById('email').value.trim();
+      const err = document.getElementById('emailErr');
+      const el = document.getElementById('email');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { el.classList.add('error'); err.classList.add('show'); return false; }
+      el.classList.remove('error'); err.classList.remove('show');
+    }
+    if (step === 3) {
+      const v = document.getElementById('phone').value.replace(/\D/g, '');
+      const err = document.getElementById('phoneErr');
+      const el = document.getElementById('phone');
+      if (v.length < 9 || v.length > 10) { el.classList.add('error'); err.classList.add('show'); return false; }
+      el.classList.remove('error'); err.classList.remove('show');
+    }
+    if (step === 4) {
+      const v = parseInt(document.getElementById('age').value);
+      const err = document.getElementById('ageErr');
+      const el = document.getElementById('age');
+      if (!v || v < 1 || v > 120) { el.classList.add('error'); err.classList.add('show'); return false; }
+      el.classList.remove('error'); err.classList.remove('show');
+    }
+    if (step === 5) {
+      const v = document.querySelector('input[name="gender"]:checked');
+      const err = document.getElementById('genderErr');
+      if (!v) { err.classList.add('show'); return false; }
+      err.classList.remove('show');
+    }
+    if (step === 6) {
+      const v = document.getElementById('education').value;
+      const err = document.getElementById('eduErr');
+      const el = document.getElementById('education');
+      if (!v) { el.classList.add('error'); err.classList.add('show'); return false; }
+      el.classList.remove('error'); err.classList.remove('show');
+    }
+    if (step === 7) {
+      const v = document.getElementById('job').value.trim();
+      const err = document.getElementById('jobErr');
+      const el = document.getElementById('job');
+      if (!v) { el.classList.add('error'); err.classList.add('show'); return false; }
+      el.classList.remove('error'); err.classList.remove('show');
+    }
+    if (step === 10) {
+      const v = document.querySelector('input[name="satisfy"]:checked');
+      const err = document.getElementById('satisfyErr');
+      if (!v) { err.classList.add('show'); return false; }
+      err.classList.remove('show');
+    }
+    return true;
+  }
+
+  function nextStep() {
+    if (!validateStep(currentStep)) return;
+    if (currentStep < totalSteps) { currentStep++; updateUI(); }
+  }
+
+  function prevStep() {
+    if (currentStep > 1) { currentStep--; updateUI(); }
+  }
+
+  // Radio/checkbox highlight
+  document.querySelectorAll('.option-item input').forEach(input => {
+    input.addEventListener('change', function() {
+      if (this.type === 'radio') {
+        document.querySelectorAll(`input[name="${this.name}"]`).forEach(r => {
+          r.closest('.option-item').classList.remove('selected');
+        });
+        this.closest('.option-item').classList.add('selected');
+      } else {
+        this.closest('.option-item').classList.toggle('selected', this.checked);
+      }
     });
+  });
 
-    function validate() {
-      let ok = true;
-      const name = document.getElementById('name');
-      const nameErr = document.getElementById('nameErr');
-      if (!name.value.trim()) {
-        name.classList.add('error'); nameErr.classList.add('show'); ok = false;
-      } else { name.classList.remove('error'); nameErr.classList.remove('show'); }
+  document.getElementById('surveyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!validateStep(currentStep)) return;
+    const sources = [...document.querySelectorAll('input[name="source"]:checked')].map(c => c.value);
+    const data = {
+      id: Date.now(),
+      name: document.getElementById('name').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      age: document.getElementById('age').value,
+      gender: document.querySelector('input[name="gender"]:checked')?.value || '',
+      education: document.getElementById('education').value,
+      job: document.getElementById('job').value.trim(),
+      income: document.getElementById('income').value,
+      source: sources.join(', '),
+      satisfy: document.querySelector('input[name="satisfy"]:checked')?.value || '',
+      suggestion: document.getElementById('suggestion').value.trim(),
+      date: new Date().toLocaleString('th-TH')
+    };
+    const list = JSON.parse(localStorage.getItem('registrations') || '[]');
+    list.push(data);
+    localStorage.setItem('registrations', JSON.stringify(list));
+    document.getElementById('surveyForm').style.display = 'none';
+    document.getElementById('progressWrap').style.display = 'none';
+    document.getElementById('speechBox').style.display = 'none';
+    document.getElementById('successBox').style.display = 'block';
+  });
 
-      const email = document.getElementById('email');
-      const emailErr = document.getElementById('emailErr');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
-        email.classList.add('error'); emailErr.classList.add('show'); ok = false;
-      } else { email.classList.remove('error'); emailErr.classList.remove('show'); }
-
-      const phone = document.getElementById('phone');
-      const phoneErr = document.getElementById('phoneErr');
-      const digits = phone.value.replace(/\D/g, '');
-      if (digits.length < 9 || digits.length > 10) {
-        phone.classList.add('error'); phoneErr.classList.add('show'); ok = false;
-      } else { phone.classList.remove('error'); phoneErr.classList.remove('show'); }
-
-      return ok;
-    }
-
-    function saveAndShow() {
-      const list = JSON.parse(localStorage.getItem('registrations') || '[]');
-      list.push({
-        id: Date.now(),
-        name: document.getElementById('name').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
-        date: new Date().toLocaleString('th-TH')
-      });
-      localStorage.setItem('registrations', JSON.stringify(list));
-      document.getElementById('surveyForm').style.display = 'none';
-      document.getElementById('successBox').style.display = 'block';
-    }
-
-    function resetForm() {
-      document.getElementById('surveyForm').reset();
-      document.getElementById('surveyForm').style.display = 'block';
-      document.getElementById('successBox').style.display = 'none';
-      ['name','email','phone'].forEach(id => document.getElementById(id).classList.remove('error'));
-      ['nameErr','emailErr','phoneErr'].forEach(id => document.getElementById(id).classList.remove('show'));
-    }
-  </script>
+  function resetForm() {
+    document.getElementById('surveyForm').reset();
+    document.querySelectorAll('.option-item').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('.error-msg').forEach(el => el.classList.remove('show'));
+    document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+    currentStep = 1;
+    updateUI();
+    document.getElementById('surveyForm').style.display = 'block';
+    document.getElementById('progressWrap').style.display = 'block';
+    document.getElementById('speechBox').style.display = 'block';
+    document.getElementById('successBox').style.display = 'none';
+  }
+</script>
 </body>
 </html>

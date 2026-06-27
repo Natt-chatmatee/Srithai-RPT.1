@@ -377,72 +377,179 @@
         <!-- Character card -->
         <div class="character-card">
           <svg class="character-svg" viewBox="0 0 240 290" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sparkles around character -->
-            <text class="sparkle" x="20"  y="40" font-size="14" fill="#fbbf24">✨</text>
-            <text class="sparkle s2" x="200" y="60" font-size="14" fill="#a78bfa">✨</text>
-            <text class="sparkle s3" x="30"  y="180" font-size="14" fill="#f472b6">✨</text>
-            <text class="sparkle s2" x="205" y="200" font-size="14" fill="#60a5fa">✨</text>
+            <defs>
+              <radialGradient id="skinGr" cx="45%" cy="38%" r="55%">
+                <stop offset="0%" stop-color="#ffe8d6"/>
+                <stop offset="100%" stop-color="#fdd8b5"/>
+              </radialGradient>
+              <radialGradient id="shirtGr" cx="50%" cy="30%" r="65%">
+                <stop offset="0%" stop-color="#93c5fd"/>
+                <stop offset="100%" stop-color="#3b82f6"/>
+              </radialGradient>
+              <radialGradient id="blushGr" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#fca5a5" stop-opacity=".65"/>
+                <stop offset="100%" stop-color="#fca5a5" stop-opacity="0"/>
+              </radialGradient>
+              <linearGradient id="hairGr" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#4a3728"/>
+                <stop offset="50%" stop-color="#5c4033"/>
+                <stop offset="100%" stop-color="#3d2b1f"/>
+              </linearGradient>
+              <filter id="charShadow" x="-15%" y="-10%" width="130%" height="130%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                <feOffset dy="2"/><feComponentTransfer><feFuncA type="linear" slope=".12"/></feComponentTransfer>
+                <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <!-- Sparkles -->
+            <text class="sparkle" x="18" y="38" font-size="16" fill="#fbbf24">&#x2728;</text>
+            <text class="sparkle s2" x="200" y="55" font-size="14" fill="#a78bfa">&#x2728;</text>
+            <text class="sparkle s3" x="28" y="175" font-size="14" fill="#f472b6">&#x2728;</text>
+            <text class="sparkle s2" x="208" y="195" font-size="13" fill="#60a5fa">&#x2728;</text>
+            <!-- Floating hearts -->
+            <text class="sparkle" x="205" y="38" font-size="12" fill="#fb7185">&#x2764;</text>
+            <text class="sparkle s3" x="15" y="145" font-size="11" fill="#f472b6">&#x2764;</text>
 
             <!-- Shadow under feet -->
-            <ellipse cx="120" cy="280" rx="55" ry="5" fill="rgba(0,0,0,.12)"/>
+            <ellipse cx="120" cy="280" rx="50" ry="5" fill="rgba(0,0,0,.09)"/>
 
             <!-- Body group (breathes) -->
             <g class="anim-body">
               <!-- Legs -->
-              <rect x="100" y="225" width="14" height="50" rx="7" fill="#4a5568"/>
-              <rect x="126" y="225" width="14" height="50" rx="7" fill="#4a5568"/>
-              <!-- Shoes -->
-              <ellipse cx="107" cy="278" rx="11" ry="5" fill="#2d3748"/>
-              <ellipse cx="133" cy="278" rx="11" ry="5" fill="#2d3748"/>
+              <rect x="100" y="228" width="14" height="46" rx="7" fill="url(#skinGr)"/>
+              <rect x="126" y="228" width="14" height="46" rx="7" fill="url(#skinGr)"/>
+              <!-- Cute round shoes -->
+              <ellipse cx="107" cy="276" rx="14" ry="7" fill="#6366f1"/>
+              <ellipse cx="133" cy="276" rx="14" ry="7" fill="#6366f1"/>
+              <ellipse cx="107" cy="274" rx="9" ry="3" fill="#818cf8" opacity=".5"/>
+              <ellipse cx="133" cy="274" rx="9" ry="3" fill="#818cf8" opacity=".5"/>
 
               <!-- Body (shirt) -->
-              <ellipse id="bodyEllipse" cx="120" cy="190" rx="38" ry="48" fill="#90cdf4"/>
-
-              <!-- Shirt detail -->
-              <path id="shirtCollar" d="M105 152 Q120 165 135 152" stroke="#fff" stroke-width="2" fill="none" opacity=".7"/>
+              <ellipse id="bodyEllipse" cx="120" cy="192" rx="38" ry="46" fill="url(#shirtGr)" filter="url(#charShadow)"/>
+              <!-- Shirt collar -->
+              <path id="shirtCollar" d="M105 155 Q120 168 135 155" stroke="#bfdbfe" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <!-- Shirt pocket heart -->
+              <text x="108" y="193" font-size="10" fill="#bfdbfe">&#x2665;</text>
+              <!-- Shirt buttons -->
+              <circle cx="120" cy="200" r="1.8" fill="#bfdbfe"/>
+              <circle cx="120" cy="210" r="1.8" fill="#bfdbfe"/>
 
               <!-- Left arm (static) -->
-              <path d="M86 160 Q70 195 78 230" stroke="#fde0c5" stroke-width="13" fill="none" stroke-linecap="round"/>
-              <circle cx="78" cy="232" r="8" fill="#fde0c5"/>
+              <path d="M86 162 Q68 198 76 232" stroke="url(#skinGr)" stroke-width="14" fill="none" stroke-linecap="round"/>
+              <circle cx="76" cy="234" r="9" fill="#ffe8d6"/>
+              <!-- Tiny fingers -->
+              <circle cx="72" cy="229" r="4" fill="#ffe8d6"/>
+              <circle cx="77" cy="227" r="4" fill="#ffe8d6"/>
+              <circle cx="82" cy="230" r="4" fill="#ffe8d6"/>
             </g>
 
             <!-- Right arm (waves when form is complete) -->
             <g id="rightArm">
-              <path d="M154 160 Q170 195 162 230" stroke="#fde0c5" stroke-width="13" fill="none" stroke-linecap="round"/>
-              <circle cx="162" cy="232" r="8" fill="#fde0c5"/>
+              <path d="M154 162 Q172 198 164 232" stroke="url(#skinGr)" stroke-width="14" fill="none" stroke-linecap="round"/>
+              <circle cx="164" cy="234" r="9" fill="#ffe8d6"/>
+              <circle cx="160" cy="229" r="4" fill="#ffe8d6"/>
+              <circle cx="165" cy="227" r="4" fill="#ffe8d6"/>
+              <circle cx="170" cy="230" r="4" fill="#ffe8d6"/>
             </g>
 
             <!-- Head group -->
             <g>
               <!-- Long hair back (for female) -->
-              <ellipse id="hairBack" cx="120" cy="120" rx="48" ry="55" fill="#5b3b1f" style="display:none"/>
+              <ellipse id="hairBack" cx="120" cy="120" rx="52" ry="60" fill="url(#hairGr)" style="display:none"/>
+
+              <!-- Neck -->
+              <rect x="112" y="136" width="16" height="20" rx="8" fill="url(#skinGr)"/>
 
               <!-- Head -->
-              <circle id="headCircle" cx="120" cy="105" r="42" fill="#fde0c5"/>
+              <circle id="headCircle" cx="120" cy="105" r="46" fill="url(#skinGr)" filter="url(#charShadow)"/>
+
+              <!-- Ears -->
+              <ellipse cx="74" cy="108" rx="8" ry="10" fill="url(#skinGr)"/>
+              <ellipse cx="166" cy="108" rx="8" ry="10" fill="url(#skinGr)"/>
+              <ellipse cx="74" cy="108" rx="5" ry="6" fill="#f5b78a" opacity=".4"/>
+              <ellipse cx="166" cy="108" rx="5" ry="6" fill="#f5b78a" opacity=".4"/>
+              <!-- Earrings -->
+              <circle cx="74" cy="117" r="2.5" fill="#fbbf24"/>
+              <circle cx="166" cy="117" r="2.5" fill="#fbbf24"/>
 
               <!-- Hair top (animates sway) -->
               <g class="anim-hair">
-                <path id="hairTop" d="M78 92 Q120 50 162 92 Q150 75 130 70 Q110 65 90 72 Q82 78 78 92 Z" fill="#5b3b1f"/>
+                <!-- Main hair volume -->
+                <path id="hairTop" d="M70 95
+                   Q65 55 85 42
+                   Q100 32 120 30
+                   Q140 32 155 42
+                   Q175 55 170 95
+                   Q168 72 158 60
+                   Q145 45 130 42
+                   Q120 38 110 42
+                   Q95 45 82 60
+                   Q72 72 70 95Z" fill="url(#hairGr)"/>
+                <!-- Fluffy hair bumps on top -->
+                <ellipse cx="98" cy="38" rx="18" ry="13" fill="url(#hairGr)"/>
+                <ellipse cx="120" cy="34" rx="16" ry="12" fill="url(#hairGr)"/>
+                <ellipse cx="142" cy="38" rx="18" ry="13" fill="url(#hairGr)"/>
+                <!-- Bangs / fringe -->
+                <path d="M80 72 Q85 50 98 46 Q100 60 88 72Z" fill="#5c4033"/>
+                <path d="M88 66 Q98 44 112 42 Q108 56 96 66Z" fill="#4a3728"/>
+                <path d="M102 62 Q114 38 128 38 Q124 54 112 62Z" fill="#5c4033"/>
+                <path d="M118 62 Q130 40 145 44 Q138 58 126 64Z" fill="#4a3728"/>
+                <path d="M134 68 Q148 48 160 56 Q152 68 140 72Z" fill="#5c4033"/>
+                <!-- Side strands -->
+                <path d="M72 90 Q66 95 64 112 Q62 125 66 132" stroke="url(#hairGr)" stroke-width="11" fill="none" stroke-linecap="round"/>
+                <path d="M168 90 Q174 95 176 112 Q178 125 174 132" stroke="url(#hairGr)" stroke-width="11" fill="none" stroke-linecap="round"/>
+                <!-- Hair shine highlights -->
+                <ellipse cx="106" cy="42" rx="9" ry="3.5" fill="white" opacity=".18" transform="rotate(-12 106 42)"/>
+                <ellipse cx="138" cy="40" rx="7" ry="3" fill="white" opacity=".14" transform="rotate(10 138 40)"/>
               </g>
 
-              <!-- Cheeks -->
-              <ellipse cx="92" cy="118" rx="6" ry="4" fill="#fbb6ce" opacity=".7"/>
-              <ellipse cx="148" cy="118" rx="6" ry="4" fill="#fbb6ce" opacity=".7"/>
+              <!-- === EYES (big kawaii eyes) === -->
+              <g class="anim-eye">
+                <!-- Left eye -->
+                <ellipse cx="102" cy="108" rx="13" ry="14" fill="white" stroke="#e2e8f0" stroke-width=".5"/>
+                <circle cx="104" cy="110" r="8.5" fill="#4a3728"/>
+                <circle cx="104" cy="110" r="5.5" fill="#2d1810"/>
+                <!-- Sparkle in eye -->
+                <circle cx="108" cy="105" r="3.5" fill="white"/>
+                <circle cx="102" cy="113" r="1.8" fill="white" opacity=".7"/>
+              </g>
+              <g class="anim-eye">
+                <!-- Right eye -->
+                <ellipse cx="138" cy="108" rx="13" ry="14" fill="white" stroke="#e2e8f0" stroke-width=".5"/>
+                <circle cx="140" cy="110" r="8.5" fill="#4a3728"/>
+                <circle cx="140" cy="110" r="5.5" fill="#2d1810"/>
+                <!-- Sparkle in eye -->
+                <circle cx="144" cy="105" r="3.5" fill="white"/>
+                <circle cx="138" cy="113" r="1.8" fill="white" opacity=".7"/>
+              </g>
 
-              <!-- Eyes (blink) -->
-              <ellipse class="anim-eye" cx="105" cy="108" rx="3.5" ry="6" fill="#1a202c"/>
-              <ellipse class="anim-eye" cx="135" cy="108" rx="3.5" ry="6" fill="#1a202c"/>
-              <!-- Eye shine -->
-              <circle cx="106" cy="106" r="1.3" fill="#fff"/>
-              <circle cx="136" cy="106" r="1.3" fill="#fff"/>
+              <!-- Eyelashes -->
+              <path d="M89 99 L86 93" stroke="#3d2b1f" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M93 96 L91 90" stroke="#3d2b1f" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M147 96 L149 90" stroke="#3d2b1f" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M151 99 L154 93" stroke="#3d2b1f" stroke-width="1.5" stroke-linecap="round"/>
 
               <!-- Eyebrows -->
-              <path d="M99 98 Q105 95 111 98"  stroke="#5b3b1f" stroke-width="2" fill="none" stroke-linecap="round"/>
-              <path d="M129 98 Q135 95 141 98" stroke="#5b3b1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M92 94 Q102 89 112 94" stroke="#4a3728" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+              <path d="M128 94 Q138 89 148 94" stroke="#4a3728" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+
+              <!-- Cheeks (rosy blush) -->
+              <ellipse cx="88" cy="122" rx="11" ry="7" fill="url(#blushGr)"/>
+              <ellipse cx="152" cy="122" rx="11" ry="7" fill="url(#blushGr)"/>
+
+              <!-- Cute tiny nose -->
+              <ellipse cx="120" cy="118" rx="3" ry="2.2" fill="#e8a882" opacity=".5"/>
 
               <!-- Mouth (varies) -->
-              <path id="mouthPath" d="M108 126 Q120 134 132 126"
-                    stroke="#1a202c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <path id="mouthPath" d="M108 128 Q120 140 132 128"
+                    stroke="#c0755a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <!-- Tongue peek -->
+              <ellipse id="tonguePeek" cx="120" cy="133" rx="5" ry="3.5" fill="#fca5a5"/>
+              <path d="M115 133 Q120 138 125 133" fill="#e88080"/>
+
+              <!-- Star sparkle decoration -->
+              <text x="158" y="120" font-size="8" fill="#fbbf24" opacity=".5">&#x2726;</text>
             </g>
           </svg>
 
